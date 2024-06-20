@@ -38,6 +38,11 @@ public class ArchViz : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"InputCore",
+				"EnhancedInput",
+				"UMG",
+				"ProceduralMeshComponent"
+
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

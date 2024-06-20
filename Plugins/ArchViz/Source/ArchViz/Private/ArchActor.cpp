@@ -18,3 +18,11 @@ void AArchActor::Tick(float DeltaTime)
 
 }
 
+void AArchActor::HighLightBorder()
+{
+}
+
+void AArchActor::UnHighLightBorder()
+{
+}
+
