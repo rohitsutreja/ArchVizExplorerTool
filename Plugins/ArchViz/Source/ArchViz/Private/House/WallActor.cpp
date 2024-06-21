@@ -25,15 +25,15 @@ void AWallActor::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	
-	
+
+
 }
 
 void AWallActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(IsValid(PropertyPanelUI))
+	if (IsValid(PropertyPanelUI))
 	{
 		PropertyPanelUI->SwitchToWidget(0);
 
@@ -45,6 +45,15 @@ void AWallActor::BeginPlay()
 	UpdateWall();
 }
 
+void AWallActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (EndPlayReason == EEndPlayReason::Destroyed)
+	{
+		RemoveAllDoorsFromWall();
+	}
+
+	Super::EndPlay(EndPlayReason);
+}
 
 
 void AWallActor::UpdateWall()
@@ -79,15 +88,19 @@ void AWallActor::UpdateWall()
 
 		if (idx < ArrayOfWallSegments.Num())
 		{
-			ArrayOfWallSegments[idx]->SetStaticMesh(DoorHallSegment);
+			if (IsValid(ArrayOfWallSegments[idx]))
+			{
+				ArrayOfWallSegments[idx]->SetStaticMesh(DoorHallSegment);
+				Door->AttachToComponent(ArrayOfWallSegments[idx], FAttachmentTransformRules::KeepRelativeTransform, FName(TEXT("DoorSocket")));
+				Door->SetActorRelativeLocation(FVector::ZeroVector);
+				Door->SetActorRelativeRotation(FRotator::ZeroRotator);
+
+			}
 		}
-		
+
 	}
+
 	HighLightBorder();
-
-
-
-
 }
 
 
@@ -101,7 +114,10 @@ void AWallActor::SetLength(float Length)
 		if (idx > NewNumberOfWallSegments - 1)
 		{
 			ADoorActor* RemovedDoor = IndexToDoorMapping.FindAndRemoveChecked(idx);
-			RemovedDoor->Destroy();
+			if (IsValid(RemovedDoor))
+			{
+				RemovedDoor->Destroy();
+			}
 		}
 	}
 
@@ -117,7 +133,7 @@ void AWallActor::HighLightBorder()
 	for (auto& Temp : ArrayOfWallSegments)
 	{
 		if (IsValid(Temp))
-			{
+		{
 			Temp->SetRenderCustomDepth(true);
 			Temp->CustomDepthStencilValue = 2;
 		}
@@ -125,7 +141,7 @@ void AWallActor::HighLightBorder()
 	}
 }
 
-void AWallActor::UnHighLightBorder() 
+void AWallActor::UnHighLightBorder()
 {
 	for (auto& Temp : ArrayOfWallSegments)
 	{
@@ -143,7 +159,7 @@ void AWallActor::AttachDoorToComponent(UStaticMeshComponent* Component, ADoorAct
 {
 	int32 WallSegmentIdx = ArrayOfWallSegments.Find(Component);
 
-	if(WallSegmentIdx != INDEX_NONE)
+	if (WallSegmentIdx != INDEX_NONE)
 	{
 		IndexToDoorMapping.Add({ WallSegmentIdx,Door });
 	}
@@ -152,11 +168,11 @@ void AWallActor::AttachDoorToComponent(UStaticMeshComponent* Component, ADoorAct
 
 	if (WallSegmentIdx < ArrayOfWallSegments.Num())
 	{
-			Door->AttachToComponent(ArrayOfWallSegments[WallSegmentIdx], FAttachmentTransformRules::KeepRelativeTransform, FName(TEXT("DoorSocket")));
-			Door->SetActorRelativeLocation(FVector::ZeroVector);
-			Door->SetActorRelativeRotation(FRotator::ZeroRotator);
+		Door->AttachToComponent(ArrayOfWallSegments[WallSegmentIdx], FAttachmentTransformRules::KeepRelativeTransform, FName(TEXT("DoorSocket")));
+		Door->SetActorRelativeLocation(FVector::ZeroVector);
+		Door->SetActorRelativeRotation(FRotator::ZeroRotator);
 	}
-	
+
 
 
 }
@@ -168,18 +184,26 @@ void AWallActor::DetachDoorFromComponent(UStaticMeshComponent* Component)
 
 	if (WallSegmentIdx != INDEX_NONE)
 	{
-		IndexToDoorMapping.Remove({ WallSegmentIdx});
+
+		IndexToDoorMapping.Remove({ WallSegmentIdx });
 	}
 
+
+
 	UpdateWall();
+
+	UnHighLightBorder();
 
 }
 
 void AWallActor::RemoveAllDoorsFromWall()
 {
-	for(auto& [idx,Door] : IndexToDoorMapping)
+	for (auto& [idx, Door] : IndexToDoorMapping)
 	{
-		Door->Destroy();
+		if (IsValid(Door))
+		{
+			Door->Destroy();
+		}
 	}
 
 	IndexToDoorMapping.Empty();
@@ -188,9 +212,3 @@ void AWallActor::RemoveAllDoorsFromWall()
 
 }
 
-void AWallActor::Destroyed()
-{
-	RemoveAllDoorsFromWall();
-
-	Super::Destroyed();
-}

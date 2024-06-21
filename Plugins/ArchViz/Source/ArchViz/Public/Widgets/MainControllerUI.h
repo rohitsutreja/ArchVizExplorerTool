@@ -6,9 +6,10 @@
 #include "Blueprint/UserWidget.h"
 #include "MainControllerUI.generated.h"
 
+class UBorder;
 class UButton;
 /**
- * 
+ *
  */
 UCLASS()
 class ARCHVIZ_API UMainControllerUI : public UUserWidget
@@ -25,6 +26,17 @@ public:
 	UButton* MaterialButton;
 	UPROPERTY()
 	UButton* InteriorButton;
+
+	UPROPERTY()
+	UBorder* RoadButtonBorder;
+
+	UPROPERTY()
+	UButton* HouseButtonBorder;
+	UPROPERTY()
+	UButton* MaterialButtonBorder;
+	UPROPERTY()
+	UButton* InteriorButtonBorder;
+	;
 
 
 

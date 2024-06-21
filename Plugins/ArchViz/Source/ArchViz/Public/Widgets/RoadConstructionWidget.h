@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/ComboBoxString.h"
 #include "RoadConstructionWidget.generated.h"
 
 class USpinBox;
@@ -23,10 +24,5 @@ public:
 	UButton* SaveButton;
 
 	UPROPERTY(meta = (BindWidget))
-	UHorizontalBox* WidthContainer;
-
-	UPROPERTY(meta = (BindWidget))
-	USpinBox* WidthValue;
-
-
+	UComboBoxString* Mode;
 };

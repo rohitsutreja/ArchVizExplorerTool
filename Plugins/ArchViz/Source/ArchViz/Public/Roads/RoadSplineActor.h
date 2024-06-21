@@ -4,13 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "ArchActor.h"
+#include "Widgets/PropertyPanelWidget.h"
 #include "RoadSplineActor.generated.h"
 
 struct FSplinePoint;
 class USplineComponent;
 /**
- * 
+ *
  */
+
+
+UENUM()
+enum class ERoadType
+{
+	Sharp,
+	Curve
+};
 UCLASS()
 class ARCHVIZ_API ARoadSplineActor : public AArchActor
 {
@@ -24,13 +33,12 @@ public:
 	void OnConstruction(const FTransform& Transform) override;
 
 	void DestroyRoad();
+	void AddSplinePoint(const FVector& Location);
 
 	void UpdateRoad();
 
-	void UpdateRoad2();
 
-
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USplineComponent* Spline;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -41,6 +49,33 @@ public:
 
 	UPROPERTY()
 	TArray<UStaticMeshComponent*> SplineMeshComponents;
+
+	UPROPERTY()
+	float Width = 400;
+
+	UPROPERTY(EditDefaultsOnly)
+	ERoadType TypeOfRoad = ERoadType::Sharp;
+
+
+	UPROPERTY()
+	UPropertyPanelWidget* PropertyPanelUI;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPropertyPanelWidget> PropertyPanelClass;
+
+
+	UFUNCTION()
+	void OnDeleteButtonDown();
+
+	UFUNCTION()
+	void OnWidthChanged(float InValue);
+
+	UFUNCTION()
+	void OnRoadTypeChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+
+
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 
 };

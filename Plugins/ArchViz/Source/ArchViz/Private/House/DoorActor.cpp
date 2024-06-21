@@ -4,6 +4,7 @@
 #include "House/DoorActor.h"
 
 #include "ComponentUtils.h"
+#include "Components/Button.h"
 #include "Components/SpinBox.h"
 #include "Components/TextBlock.h"
 #include "House/WallActor.h"
@@ -12,26 +13,73 @@ ADoorActor::ADoorActor()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    // Create and set the root component
     RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootScene"));
     SetRootComponent(RootComponent);
 
-    // Create the static mesh component for the door
-    StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Door"));
-    StaticMeshComponent->SetupAttachment(RootComponent);
+    DoorFrameComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorFrame"));
+    DoorFrameComponent->SetupAttachment(RootComponent);
+  //  DoorFrameComponent->SetRelativeLocation({0,0,0});
+
+    DoorComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Door"));
+    DoorComponent->SetupAttachment(DoorFrameComponent);
+    DoorComponent->SetRelativeLocation({0,45,0});
 }
 
+
+
+void ADoorActor::OpenDoor()
+{
+
+        FRotator NewRotation{0};
+        NewRotation.Yaw =90;
+        DoorComponent->SetRelativeRotation(NewRotation);
+
+        bIsOpen = true;
+
+
+}
+
+void ADoorActor::CloseDoor()
+{
+        FRotator NewRotation{0};
+        NewRotation.Yaw = 0;
+        DoorComponent->SetRelativeRotation(NewRotation);
+
+        bIsOpen = false;
+    
+}
+
+
+void ADoorActor::ToggleDoor()
+{
+	if(bIsOpen)
+	{
+        CloseDoor();
+        PropertyPanelUI->DoorOpenCloseText->SetText(FText::FromString(TEXT("Open")));
+
+	}
+    else
+    {
+        OpenDoor();
+        PropertyPanelUI->DoorOpenCloseText->SetText(FText::FromString(TEXT("Close")));
+
+    }
+}
 void ADoorActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-    StaticMeshComponent->SetStaticMesh(DoorMesh);
+    DoorFrameComponent->SetStaticMesh(DoorFrameMesh);
+    DoorComponent->SetStaticMesh(DoorMesh);
 
     if (IsValid(PropertyPanelUI))
     {
         PropertyPanelUI->SwitchToWidget(2);
 
         PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Door")));
+
+        PropertyPanelUI->DoorOpenCloseButton->OnClicked.AddDynamic(this, &ADoorActor::ToggleDoor);
+
     }
 
 
@@ -40,18 +88,23 @@ void ADoorActor::BeginPlay()
 
 void ADoorActor::HighLightBorder()
 {
-    StaticMeshComponent->SetRenderCustomDepth(true);
-    StaticMeshComponent->CustomDepthStencilValue = 2;
+    DoorFrameComponent->SetRenderCustomDepth(true);
+    DoorFrameComponent->CustomDepthStencilValue = 2;
+
+    DoorComponent->SetRenderCustomDepth(true);
+    DoorComponent->CustomDepthStencilValue = 2;
 }
 
 void ADoorActor::UnHighLightBorder()
 {
-    StaticMeshComponent->SetRenderCustomDepth(false);
+    DoorFrameComponent->SetRenderCustomDepth(false);
+    DoorComponent->SetRenderCustomDepth(false);
 }
 
-void ADoorActor::Destroyed()
-{
 
+
+void ADoorActor::DetachFromWall()
+{
     if (auto ParentComp = ComponentUtils::GetAttachedParent(RootComponent))
     {
         if (auto ParentActor = ParentComp->GetAttachParentActor())
@@ -63,7 +116,16 @@ void ADoorActor::Destroyed()
         }
 
     }
+}
+void ADoorActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
 
-    Super::Destroyed();
+    if (EndPlayReason == EEndPlayReason::Destroyed)
+    {
+        DetachFromWall();
+    }
+
+
+	Super::EndPlay(EndPlayReason);
 }
 

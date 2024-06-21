@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WallActor.h"
 #include "House/HouseComponent.h"
 #include "DoorActor.generated.h"
 
@@ -18,21 +19,36 @@ class ARCHVIZ_API ADoorActor : public AHouseComponent
 public:
 
 	UPROPERTY()
-	UStaticMeshComponent* StaticMeshComponent;
+	UStaticMeshComponent* DoorFrameComponent;
+
+	UPROPERTY()
+	UStaticMeshComponent* DoorComponent;
+
 
 	UPROPERTY(EditAnywhere)
 	UStaticMesh* DoorMesh;
 
+	UPROPERTY(EditAnywhere)
+	UStaticMesh* DoorFrameMesh;
 
 	ADoorActor();
 
+	void OpenDoor();
+	void CloseDoor();
+
+	UFUNCTION()
+	void ToggleDoor();
+
+
+	bool bIsOpen = false;
 
 	virtual void BeginPlay() override;
 
 	virtual void HighLightBorder() override;
 
 	virtual void UnHighLightBorder() override;
+	void DetachFromWall();
 
-	virtual void Destroyed() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 };

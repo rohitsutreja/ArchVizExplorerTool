@@ -65,13 +65,12 @@ void AHouseComponent::HidePropertyPanel()
 
 void AHouseComponent::Destroyed()
 {
+
+	if (IsValid(PropertyPanelUI))
+	{
+		PropertyPanelUI->RemoveFromParent();
+	}
+
 	Super::Destroyed();
-
-if(IsValid(PropertyPanelUI))
-{
-	PropertyPanelUI->RemoveFromParent();
-	
-}
-
 }
 

@@ -28,8 +28,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UStaticMesh* WallSegmentMesh;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	UStaticMesh* DoorSegmentMesh;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UStaticMesh* DoorHallSegment;
@@ -44,6 +42,7 @@ public:
 	void OnConstruction(const FTransform& Transform) override;
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	void UpdateWall();
 
@@ -55,6 +54,7 @@ public:
 
 	void AttachDoorToComponent(UStaticMeshComponent* Component, ADoorActor* Door);
 	void DetachDoorFromComponent(UStaticMeshComponent* Component);
+
 	void RemoveAllDoorsFromWall();
-	virtual void Destroyed() override;
+
 };

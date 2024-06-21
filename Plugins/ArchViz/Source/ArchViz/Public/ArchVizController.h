@@ -13,6 +13,7 @@
 #include "ArchVizController.generated.h"
 
 
+class URoadConstructionWidget;
 class AWallActor;
 class AFloorActor;
 class UInputMappingContext;
@@ -43,11 +44,13 @@ public:
 	UPROPERTY()
 	EMode CurrentMode = EMode::RoadConstruction;
 
+
 	UPROPERTY()
 	UMainControllerUI* MainUI;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainControllerUI> MainUIClass;
+
 
 	UPROPERTY()
 	UHouseConstructionWidget* HouseConstructionUI;
@@ -55,20 +58,27 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UHouseConstructionWidget> HouseConstructionUIClass;
 
+
+
+	UPROPERTY()
+	URoadConstructionWidget* RoadConstructionUI;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<URoadConstructionWidget> RoadConstructionUIClass;
+
+
+
+
 	UPROPERTY()
 	ARoadSplineActor* CurrentRoadSpline;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ARoadSplineActor> RoadSplineClass;
 
+
+
 	UFUNCTION()
 	void CreateAndSelectWall();
-
-	UFUNCTION()
-	void OnWallLengthChange(float InValue);
-
-	UFUNCTION()
-	void DeleteSelectedActor();
 
 	UFUNCTION()
 	void CreateAndSelectFloor();
@@ -76,7 +86,14 @@ public:
 	UFUNCTION()
 	void CreateAndSelectDoor();
 
+
+	UFUNCTION()
+	void CreateNewRoad();
+	UFUNCTION()
+	void OnRoadModeChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 	virtual void BeginPlay() override;
+
+
 
 	void CleanUp();
 
@@ -100,7 +117,7 @@ public:
 	void SetupInputComponent() override;
 
 	void SetUpInputForRoadConstructionMode();
-	void OnRKeyDown(const FInputActionValue& InputActionValue);
+	void OnRKeyDown();
 
 	bool IsCurrentActorMoving();
 	void SelectHouseComponentActorUnderCursor();
@@ -125,6 +142,8 @@ public:
 	UPROPERTY()
 	UInputMappingContext* InteriorDesignMapping;
 
+
+
 	UPROPERTY()
 	AHouseComponent* SelectedActor;
 
@@ -136,6 +155,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ADoorActor> DoorClass;
+
+
 
 	bool bIsMovingWithCursor = false;
 

@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PropertyPanelWidget.generated.h"
 
+class UComboBoxString;
 class UTextBlock;
 class USpinBox;
 class UVerticalBox;
@@ -13,7 +14,7 @@ class UGridPanel;
 class UWidgetSwitcher;
 class UButton;
 /**
- * 
+ *
  */
 UCLASS()
 class ARCHVIZ_API UPropertyPanelWidget : public UUserWidget
@@ -55,6 +56,22 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* DeleteWallButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* DoorOpenCloseButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* DoorOpenCloseText;
+
+	UPROPERTY(meta = (BindWidget))
+	UComboBoxString* RoadType;
+
+	UPROPERTY(meta = (BindWidget))
+	USpinBox* RoadWidthValue;
+
+
+
+
 
 
 	virtual void NativeConstruct() override;

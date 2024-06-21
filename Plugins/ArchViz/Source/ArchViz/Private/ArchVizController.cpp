@@ -11,110 +11,102 @@
 #include "House/DoorActor.h"
 #include "House/FloorActor.h"
 #include "House/WallActor.h"
+#include "Widgets/RoadConstructionWidget.h"
 
 
 AArchVizController::AArchVizController()
 {
-    bShowMouseCursor = true;
+	bShowMouseCursor = true;
 }
 
 void AArchVizController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-    if (IsCurrentActorMoving())
-    {
-        UpdateActorPlacement();
-    }
+	if (IsCurrentActorMoving())
+	{
+		UpdateActorPlacement();
+	}
 }
+
+
 
 void AArchVizController::CreateAndSelectWall()
 {
 
-    if (IsCurrentActorMoving())
-    {
-        bIsMovingWithCursor = false;
-        SelectedActor->Destroy();
-        SelectedActor = nullptr;
-    }
+	if (IsCurrentActorMoving())
+	{
+		bIsMovingWithCursor = false;
+		SelectedActor->Destroy();
+		SelectedActor = nullptr;
+	}
 
 
-    DeselectCurrentActor();
+	DeselectCurrentActor();
 
-    FActorSpawnParameters SpawnParams;
-    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-    SelectedActor = GetWorld()->SpawnActor<AWallActor>(WallClass, FVector{ 0, 0, 0 },
-        FRotator{ 0, 0, 0 },
-        SpawnParams);
+	SelectedActor = GetWorld()->SpawnActor<AWallActor>(WallClass, FVector{ 0, 0, 0 },
+		FRotator{ 0, 0, 0 },
+		SpawnParams);
 
-    SelectedActor->HighLightBorder();
+	SelectedActor->HighLightBorder();
 
-    bIsMovingWithCursor = true;
+	bIsMovingWithCursor = true;
 }
 
-void AArchVizController::OnWallLengthChange(float InValue)
-{
-    if(IsValid(SelectedActor))
-    {
-	    if(auto Wall = Cast<AWallActor>(SelectedActor))
-	    {
-            Wall->SetLength(InValue);
-	    }
-    }
-}
+void AArchVizController::CreateAndSelectFloor() {
 
-void AArchVizController::DeleteSelectedActor()
-{
-    AActor* Temp = SelectedActor;
-    DeselectCurrentActor();
-    Temp->Destroy();
-    
-}
+	if (IsCurrentActorMoving())
+	{
+		DestroySelectedActor();
+	}
+	else
+	{
+		DeselectCurrentActor();
+	}
 
-void AArchVizController::CreateAndSelectFloor(){
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-    if (IsCurrentActorMoving())
-    {
-        bIsMovingWithCursor = false;
-        SelectedActor->Destroy();
-        SelectedActor = nullptr;
-    }
+	SelectedActor = GetWorld()->SpawnActor<AHouseComponent>(FloorClass, FVector{ 0, 0, 0 },
+		FRotator{ 0, 0, 0 },
+		SpawnParams);
 
-    DeselectCurrentActor();
+	SelectedActor->HighLightBorder();
 
-
-    FActorSpawnParameters SpawnParams;
-    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-    SelectedActor = GetWorld()->SpawnActor<AHouseComponent>(FloorClass, FVector{ 0, 0, 0 },
-        FRotator{ 0, 0, 0 },
-        SpawnParams);
-
-    SelectedActor->HighLightBorder();
-
-    bIsMovingWithCursor = true;
+	StartActorPlacement();
 }
 
 void AArchVizController::CreateAndSelectDoor()
 {
-    if (IsCurrentActorMoving())
-    {
-        DestroySelectedActor();
-    }
+	if (IsCurrentActorMoving())
+	{
+		DestroySelectedActor();
+	}
 
-    DeselectCurrentActor();
+	DeselectCurrentActor();
 
-    FActorSpawnParameters SpawnParams;
-    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-    SelectedActor = GetWorld()->SpawnActor<AHouseComponent>(DoorClass, FVector{ 0, 0, 0 },
-        FRotator{ 0, 0, 0 },
-        SpawnParams);
+	SelectedActor = GetWorld()->SpawnActor<AHouseComponent>(DoorClass, FVector{ 0, 0, 0 },
+		FRotator{ 0, 0, 0 },
+		SpawnParams);
 
-    SelectedActor->HighLightBorder();
+	SelectedActor->HighLightBorder();
 
-    StartActorPlacement();
+	StartActorPlacement();
+}
+
+void AArchVizController::CreateNewRoad()
+{
+
+}
+
+void AArchVizController::OnRoadModeChanged(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
 }
 
 
@@ -122,78 +114,88 @@ void AArchVizController::BeginPlay()
 {
 	Super::BeginPlay();
 
-    MainUI = CreateWidget<UMainControllerUI>(this,MainUIClass);
+	MainUI = CreateWidget<UMainControllerUI>(this, MainUIClass);
 
-    if(IsValid(MainUI))
-    {
-        MainUI->RoadButton->OnClicked.AddDynamic(this, &AArchVizController::InitRoadConstructionMode);
-        MainUI->HouseButton->OnClicked.AddDynamic(this, &AArchVizController::InitHouseConstructionMode);
-        MainUI->MaterialButton->OnClicked.AddDynamic(this, &AArchVizController::InitMaterialChangeMode);
-        MainUI->InteriorButton->OnClicked.AddDynamic(this, &AArchVizController::InitInteriorDesignMode);
+	if (IsValid(MainUI))
+	{
+		MainUI->RoadButton->OnClicked.AddDynamic(this, &AArchVizController::InitRoadConstructionMode);
+		MainUI->HouseButton->OnClicked.AddDynamic(this, &AArchVizController::InitHouseConstructionMode);
+		MainUI->MaterialButton->OnClicked.AddDynamic(this, &AArchVizController::InitMaterialChangeMode);
+		MainUI->InteriorButton->OnClicked.AddDynamic(this, &AArchVizController::InitInteriorDesignMode);
 
-        MainUI->AddToViewport(1);
-    }
+		MainUI->AddToViewport(1);
+	}
 
-    HouseConstructionUI = CreateWidget<UHouseConstructionWidget>(this, HouseConstructionUIClass);
+	HouseConstructionUI = CreateWidget<UHouseConstructionWidget>(this, HouseConstructionUIClass);
 
-    if(IsValid(HouseConstructionUI))
-    {
-        HouseConstructionUI->WallButton->OnClicked.AddDynamic(this, &AArchVizController::CreateAndSelectWall);
-        HouseConstructionUI->FloorButton->OnClicked.AddDynamic(this, &AArchVizController::CreateAndSelectFloor);
-        HouseConstructionUI->DoorButton->OnClicked.AddDynamic(this, &AArchVizController::CreateAndSelectDoor);
-    }
+	if (IsValid(HouseConstructionUI))
+	{
+		HouseConstructionUI->WallButton->OnClicked.AddDynamic(this, &AArchVizController::CreateAndSelectWall);
+		HouseConstructionUI->FloorButton->OnClicked.AddDynamic(this, &AArchVizController::CreateAndSelectFloor);
+		HouseConstructionUI->DoorButton->OnClicked.AddDynamic(this, &AArchVizController::CreateAndSelectDoor);
+	}
 
+	RoadConstructionUI = CreateWidget<URoadConstructionWidget>(this, RoadConstructionUIClass);
 
+	if(IsValid(RoadConstructionUI))
+	{
+		RoadConstructionUI->Mode->OnSelectionChanged.AddDynamic(this, &AArchVizController::OnRoadModeChanged);
+		RoadConstructionUI->SaveButton->OnClicked.AddDynamic(this, &AArchVizController::CreateNewRoad);
+	}
 }
+
+
 
 
 void AArchVizController::CleanUp()
 {
 
-    if(IsCurrentActorMoving())
-    {
-        DestroySelectedActor();
-    }
+	if (IsCurrentActorMoving())
+	{
+		DestroySelectedActor();
+	}
 
-    HouseConstructionUI->RemoveFromParent();
+	HouseConstructionUI->RemoveFromParent();
 }
 
 void AArchVizController::InitRoadConstructionMode()
 {
-    CleanUp();
+	CleanUp();
 
-    CurrentMode = EMode::RoadConstruction;
+	CurrentMode = EMode::RoadConstruction;
 
-    SetUpInputForRoadConstructionMode();
+	SetUpInputForRoadConstructionMode();
 }
 
 void AArchVizController::InitHouseConstructionMode()
 {
-    CleanUp();
+	CleanUp();
 
-    CurrentMode = EMode::HouseConstruction;
+	CurrentMode = EMode::HouseConstruction;
 
-    SetUpInputForHouseConstructionMode();
 
-    HouseConstructionUI->AddToViewport();
+	SetUpInputForHouseConstructionMode();
+
+	HouseConstructionUI->AddToViewport();
+
 }
 
 void AArchVizController::InitInteriorDesignMode()
 {
 
-    CleanUp();
+	CleanUp();
 
-    CurrentMode = EMode::InteriorDesign;
+	CurrentMode = EMode::InteriorDesign;
 
-    SetUpInputForInteriorDesignMode();
+	SetUpInputForInteriorDesignMode();
 }
 
 void AArchVizController::InitMaterialChangeMode()
 {
 
-    CleanUp();
+	CleanUp();
 
-    CurrentMode = EMode::MaterialChanger;
+	CurrentMode = EMode::MaterialChanger;
 }
 
 
@@ -202,62 +204,63 @@ void AArchVizController::InitMaterialChangeMode()
 
 void AArchVizController::OnLeftMouseButtonDown(const FInputActionValue& InputActionValue)
 {
-     
-    if (CurrentMode == EMode::RoadConstruction)
-    {
-        FVector WorldLocation, WorldDirection;
-        DeprojectMousePositionToWorld(WorldLocation, WorldDirection);
 
-        FHitResult HitResult;
-        GetWorld()->LineTraceSingleByChannel(HitResult, WorldLocation, WorldLocation + WorldDirection * 100000.0f, ECC_Visibility);
+	if (CurrentMode == EMode::RoadConstruction)
+	{
+		FVector WorldLocation, WorldDirection;
+		DeprojectMousePositionToWorld(WorldLocation, WorldDirection);
 
-        if (HitResult.bBlockingHit)
-        {
-            FVector HitLocation = HitResult.Location;
+		FHitResult HitResult;
+		GetWorld()->LineTraceSingleByChannel(HitResult, WorldLocation, WorldLocation + WorldDirection * 100000.0f, ECC_Visibility);
 
-            if (CurrentRoadSpline == nullptr)
-            {
-                CurrentRoadSpline = GetWorld()->SpawnActor<ARoadSplineActor>(RoadSplineClass, HitLocation, FRotator::ZeroRotator);
-                CurrentRoadSpline->SplinePoints.Add(HitLocation);
-                CurrentRoadSpline->UpdateRoad();
+		if (HitResult.bBlockingHit)
+		{
+			FVector HitLocation = HitResult.Location;
 
-            }
-            else
-            {
-                CurrentRoadSpline->SplinePoints.Add(HitLocation);
-                CurrentRoadSpline->UpdateRoad();
-            }
-        }
-    }
-    else if (CurrentMode == EMode::HouseConstruction)
-    {
-        if (IsValid(SelectedActor))
-        {
-            if (IsCurrentActorMoving())
-            {
-                EndActorPlacement();
+			if (!IsValid(CurrentRoadSpline))
+			{
+				CurrentRoadSpline = GetWorld()->SpawnActor<ARoadSplineActor>(RoadSplineClass, HitLocation, FRotator::ZeroRotator);
+				CurrentRoadSpline->AddSplinePoint(HitLocation);
+				CurrentRoadSpline->UpdateRoad();
 
-                if(IsValid(SelectedActor->PropertyPanelUI))
-                {
-                    SelectedActor->ShowPropertyPanel();
-                }
-                
-            }
-            else
-            {
-                if (SelectedActor != GetActorUnderCursor())
-                {
-                    DeselectCurrentActor();
-                    SelectHouseComponentActorUnderCursor();
-                }
-            }
-        }
-        else
-        {
-            SelectHouseComponentActorUnderCursor();
-        }
-    }
-	
+			}
+			else
+			{
+				CurrentRoadSpline->AddSplinePoint(HitLocation);
+				CurrentRoadSpline->UpdateRoad();
+			}
+		}
+	}
+	else if (CurrentMode == EMode::HouseConstruction)
+	{
+		if (IsValid(SelectedActor))
+		{
+			if (IsCurrentActorMoving())
+			{
+				EndActorPlacement();
+
+				if (IsValid(SelectedActor->PropertyPanelUI))
+				{
+					SelectedActor->ShowPropertyPanel();
+				}
+
+			}
+			else
+			{
+				if (SelectedActor != GetActorUnderCursor())
+				{
+					DeselectCurrentActor();
+
+					SelectHouseComponentActorUnderCursor();
+				}
+			}
+		}
+		else
+		{
+			SelectHouseComponentActorUnderCursor();
+		}
+	}
+
 }
 
 void AArchVizController::SetupInputComponent()
@@ -268,232 +271,147 @@ void AArchVizController::SetupInputComponent()
 
 
 
-void AArchVizController::OnRKeyDown(const FInputActionValue& InputActionValue)
-{
-    if(IsValid(SelectedActor))
-    {
-        SelectedActor->Rotate90Degree();
-    }
-}
-
-
-
-bool AArchVizController::IsCurrentActorMoving()
-{
-    return bIsMovingWithCursor;
-};
-
-void AArchVizController::SelectHouseComponentActorUnderCursor()
-{
-    AActor* ActorUnderCursor = GetActorUnderCursor();
-
-
-    if(IsValid(ActorUnderCursor))
-    {
-        if (auto HouseComponentActor = Cast<AHouseComponent>(ActorUnderCursor))
-        {
-            SelectedActor = HouseComponentActor;
-
-            SelectedActor->HighLightBorder();
-
-            if (IsValid(SelectedActor->PropertyPanelUI))
-            {
-                SelectedActor->ShowPropertyPanel();
-            }
-        }
-    }
-}
 
 AActor* AArchVizController::GetActorUnderCursor()
 {
-    if (FVector StartLocation, WorldDirection; DeprojectMousePositionToWorld(StartLocation, WorldDirection))
-    {
-        FVector EndLocation = StartLocation + WorldDirection * 100000;
+	if (FVector StartLocation, WorldDirection; DeprojectMousePositionToWorld(StartLocation, WorldDirection))
+	{
+		FVector EndLocation = StartLocation + WorldDirection * 100000;
 
-        FCollisionQueryParams Params;
-        Params.bTraceComplex = true;
-        Params.AddIgnoredActor(GetPawn());
+		FCollisionQueryParams Params;
+		Params.bTraceComplex = true;
+		Params.AddIgnoredActor(GetPawn());
 
-        if (FHitResult HitResult; GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation,
-            ECC_Visibility, Params))
-        {
-            return HitResult.GetActor();
-        }
-    }
+		if (FHitResult HitResult; GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation,
+			ECC_Visibility, Params))
+		{
+			return HitResult.GetActor();
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 };
+
+USceneComponent* AArchVizController::GetComponentUnderCursor()
+{
+	if (FVector StartLocation, WorldDirection; DeprojectMousePositionToWorld(StartLocation, WorldDirection))
+	{
+		FVector EndLocation = StartLocation + WorldDirection * 100000;
+
+		FCollisionQueryParams Params;
+		Params.bTraceComplex = true;
+		Params.AddIgnoredActor(GetPawn());
+		Params.AddIgnoredActor(SelectedActor);
+
+		if (FHitResult HitResult; GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation,
+			ECC_Visibility, Params))
+		{
+			return HitResult.GetComponent();
+		}
+	}
+
+	return nullptr;
+}
+
+
+
+void AArchVizController::SelectHouseComponentActorUnderCursor()
+{
+	AActor* ActorUnderCursor = GetActorUnderCursor();
+
+
+	if (IsValid(ActorUnderCursor))
+	{
+		if (auto HouseComponentActor = Cast<AHouseComponent>(ActorUnderCursor))
+		{
+
+
+			
+			SelectedActor = HouseComponentActor;
+
+
+			
+			SelectedActor->HighLightBorder();
+
+			if (IsValid(SelectedActor->PropertyPanelUI))
+			{
+				SelectedActor->ShowPropertyPanel();
+			}
+		}
+	}
+}
 
 void AArchVizController::DeselectCurrentActor()
 {
-    if(IsValid(SelectedActor))
-    {
-		 SelectedActor->UnHighLightBorder();
+	if (IsValid(SelectedActor))
+	{
+		SelectedActor->UnHighLightBorder();
 
-        if(IsValid(SelectedActor->PropertyPanelUI))
-        {
+		if (IsValid(SelectedActor->PropertyPanelUI))
+		{
 			SelectedActor->HidePropertyPanel();
-        }
-    }
+		}
+	}
 
 	SelectedActor = nullptr;
 
 
 };
 
-
-USceneComponent* AArchVizController::GetComponentUnderCursor()
-{
-    if (FVector StartLocation, WorldDirection; DeprojectMousePositionToWorld(StartLocation, WorldDirection))
-    {
-        FVector EndLocation = StartLocation + WorldDirection * 100000;
-
-        FCollisionQueryParams Params;
-        Params.bTraceComplex = true;
-        Params.AddIgnoredActor(GetPawn());
-        Params.AddIgnoredActor(SelectedActor);
-
-        if (FHitResult HitResult; GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation,
-            ECC_Visibility, Params))
-        {
-            return HitResult.GetComponent();
-        }
-    }
-
-    return nullptr;
-}
-
 void AArchVizController::StartActorPlacement()
 {
-    if(IsValid(SelectedActor))
-    {
-    	bIsMovingWithCursor = true;
-    }
+	if (IsValid(SelectedActor))
+	{
+		if (auto Door = Cast<ADoorActor>(SelectedActor))
+		{
+			Door->DetachFromWall();
+		}
+		
+		bIsMovingWithCursor = true;
+	}
 };
 
 void AArchVizController::EndActorPlacement()
 {
-    bIsMovingWithCursor = false;
+	bIsMovingWithCursor = false;
 
-    if(SelectedActor->IsA(ADoorActor::StaticClass()))
-    {
-        auto HitComponent = GetComponentUnderCursor();
-        auto HitActor = HitComponent->GetAttachParentActor();
-        
-        if(auto Wall = Cast<AWallActor>(HitActor))
-        {
-            Wall->AttachDoorToComponent(Cast<UStaticMeshComponent>(HitComponent), Cast<ADoorActor>(SelectedActor));
-            Wall->UnHighLightBorder();
-        }
-    }
+	if (SelectedActor->IsA(ADoorActor::StaticClass()))
+	{
+		auto HitComponent = GetComponentUnderCursor();
+		auto HitActor = HitComponent->GetAttachParentActor();
+
+		if (auto Wall = Cast<AWallActor>(HitActor))
+		{
+			Wall->AttachDoorToComponent(Cast<UStaticMeshComponent>(HitComponent), Cast<ADoorActor>(SelectedActor));
+			Wall->UnHighLightBorder();
+		}
+	}
 };
 
 void AArchVizController::UpdateActorPlacement()
 {
-        if (SelectedActor)
-        {
-            if (FVector StartLocation, WorldDirection; DeprojectMousePositionToWorld(StartLocation, WorldDirection))
-            {
-                FVector EndLocation = StartLocation + WorldDirection * 100000;
+	if (SelectedActor)
+	{
+		if (FVector StartLocation, WorldDirection; DeprojectMousePositionToWorld(StartLocation, WorldDirection))
+		{
+			FVector EndLocation = StartLocation + WorldDirection * 100000;
 
-                FCollisionQueryParams Params;
-                Params.bTraceComplex = true;
-                Params.AddIgnoredActor(GetPawn());
-                Params.AddIgnoredActor(SelectedActor);
-
-
-                if (FHitResult HitResult; GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation,
-                    ECC_Visibility, Params))
-                {
-                   
-                        FVector NewLocation = HitResult.Location;
-                        SelectedActor->SetActorLocation(NewLocation);
-                	    SelectedActor->SnapActorToGrid({ 20,20,20 });
-
-                    
-                   
-
-                }
-            }
-        }
-}
-
-void AArchVizController::OnMKeyDown()
-{
-    StartActorPlacement();
-};
+			FCollisionQueryParams Params;
+			Params.bTraceComplex = true;
+			Params.AddIgnoredActor(GetPawn());
+			Params.AddIgnoredActor(SelectedActor);
 
 
-void AArchVizController::SetUpInputForRoadConstructionMode()
-{
-    auto LeftClickAction = NewObject<UInputAction>(this);
+			if (FHitResult HitResult; GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation,
+				ECC_Visibility, Params))
+			{
 
-    RoadConstructionMapping = NewObject<UInputMappingContext>(this);
-
-    RoadConstructionMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
-
-    if (auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
-    {
-        EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::OnLeftMouseButtonDown);
-
-        if (auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-        {
-            if (IsValid(HouseConstructionMapping))
-            {
-                InputSubsystem->RemoveMappingContext(HouseConstructionMapping);
-            }
-            if (IsValid(InteriorDesignMapping))
-            {
-                InputSubsystem->RemoveMappingContext(InteriorDesignMapping);
-            }
-            if (IsValid(RoadConstructionMapping))
-            {
-                InputSubsystem->AddMappingContext(RoadConstructionMapping, 0);
-            }
-        };
-    }
-}
-
-void AArchVizController::SetUpInputForHouseConstructionMode()
-{
-    auto RotateAction = NewObject<UInputAction>(this);
-    auto MoveAction = NewObject<UInputAction>(this);
-    auto LeftClickAction = NewObject<UInputAction>(this);
-
-    HouseConstructionMapping = NewObject<UInputMappingContext>(this);
-    HouseConstructionMapping->MapKey(RotateAction, EKeys::R);
-    HouseConstructionMapping->MapKey(MoveAction, EKeys::M);
-
-    HouseConstructionMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
-
-
-    if (auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
-    {
-        EnhancedInputComponent->BindAction(RotateAction, ETriggerEvent::Completed, this, &AArchVizController::OnRKeyDown);
-        EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AArchVizController::OnMKeyDown);
-        EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::OnLeftMouseButtonDown);
-
-        if (auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-        {
-            if (IsValid(RoadConstructionMapping))
-            {
-                InputSubsystem->RemoveMappingContext(RoadConstructionMapping);
-            }
-            if (IsValid(InteriorDesignMapping))
-            {
-                InputSubsystem->RemoveMappingContext(InteriorDesignMapping);
-            }
-            if (IsValid(HouseConstructionMapping))
-            {
-                InputSubsystem->AddMappingContext(HouseConstructionMapping, 0);
-            }
-        };
-    }
-}
-
-void AArchVizController::SetUpInputForInteriorDesignMode()
-{
-	
+				FVector NewLocation = HitResult.Location;
+				SelectedActor->SetActorLocation(NewLocation);
+				SelectedActor->SnapActorToGrid({ 20,20,20 });
+			}
+		}
+	}
 }
 
 void AArchVizController::DestroySelectedActor()
@@ -501,5 +419,100 @@ void AArchVizController::DestroySelectedActor()
 	bIsMovingWithCursor = false;
 	SelectedActor->Destroy();
 	SelectedActor = nullptr;
+}
+
+bool AArchVizController::IsCurrentActorMoving()
+{
+	return bIsMovingWithCursor;
+};
+
+
+
+
+void AArchVizController::OnRKeyDown()
+{
+	if (IsValid(SelectedActor))
+	{
+		SelectedActor->Rotate90Degree();
+	}
+}
+
+void AArchVizController::OnMKeyDown()
+{
+	StartActorPlacement();
+};
+
+
+
+
+void AArchVizController::SetUpInputForRoadConstructionMode()
+{
+	auto LeftClickAction = NewObject<UInputAction>(this);
+
+	RoadConstructionMapping = NewObject<UInputMappingContext>(this);
+
+	RoadConstructionMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
+
+	if (auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::OnLeftMouseButtonDown);
+
+		if (auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+		{
+			if (IsValid(HouseConstructionMapping))
+			{
+				InputSubsystem->RemoveMappingContext(HouseConstructionMapping);
+			}
+			if (IsValid(InteriorDesignMapping))
+			{
+				InputSubsystem->RemoveMappingContext(InteriorDesignMapping);
+			}
+			if (IsValid(RoadConstructionMapping))
+			{
+				InputSubsystem->AddMappingContext(RoadConstructionMapping, 0);
+			}
+		};
+	}
+}
+
+void AArchVizController::SetUpInputForHouseConstructionMode()
+{
+	auto RotateAction = NewObject<UInputAction>(this);
+	auto MoveAction = NewObject<UInputAction>(this);
+	auto LeftClickAction = NewObject<UInputAction>(this);
+
+	HouseConstructionMapping = NewObject<UInputMappingContext>(this);
+	HouseConstructionMapping->MapKey(RotateAction, EKeys::R);
+	HouseConstructionMapping->MapKey(MoveAction, EKeys::M);
+
+	HouseConstructionMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
+
+
+	if (auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		EnhancedInputComponent->BindAction(RotateAction, ETriggerEvent::Completed, this, &AArchVizController::OnRKeyDown);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AArchVizController::OnMKeyDown);
+		EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::OnLeftMouseButtonDown);
+
+		if (auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+		{
+			if (IsValid(RoadConstructionMapping))
+			{
+				InputSubsystem->RemoveMappingContext(RoadConstructionMapping);
+			}
+			if (IsValid(InteriorDesignMapping))
+			{
+				InputSubsystem->RemoveMappingContext(InteriorDesignMapping);
+			}
+			if (IsValid(HouseConstructionMapping))
+			{
+				InputSubsystem->AddMappingContext(HouseConstructionMapping, 0);
+			}
+		};
+	}
+}
+
+void AArchVizController::SetUpInputForInteriorDesignMode()
+{
 
 }
