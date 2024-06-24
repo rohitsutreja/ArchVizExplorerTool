@@ -52,6 +52,7 @@ void AWallActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		RemoveAllDoorsFromWall();
 	}
 
+
 	Super::EndPlay(EndPlayReason);
 }
 

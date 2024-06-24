@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/SpinBox.h"
 #include "HouseConstructionWidget.generated.h"
 
 class UVerticalBox;

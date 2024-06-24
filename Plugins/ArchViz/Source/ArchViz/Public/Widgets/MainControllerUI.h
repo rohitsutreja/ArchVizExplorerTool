@@ -18,26 +18,21 @@ class ARCHVIZ_API UMainControllerUI : public UUserWidget
 
 
 public:
-	UPROPERTY()
+	UPROPERTY(meta = (BindWidget))
 	UButton* RoadButton;
-	UPROPERTY()
+	UPROPERTY(meta = (BindWidget))
 	UButton* HouseButton;
-	UPROPERTY()
+	UPROPERTY(meta = (BindWidget))
 	UButton* MaterialButton;
-	UPROPERTY()
+	UPROPERTY(meta = (BindWidget))
 	UButton* InteriorButton;
 
-	UPROPERTY()
+	UPROPERTY(meta = (BindWidget))
 	UBorder* RoadButtonBorder;
-
-	UPROPERTY()
-	UButton* HouseButtonBorder;
-	UPROPERTY()
-	UButton* MaterialButtonBorder;
-	UPROPERTY()
-	UButton* InteriorButtonBorder;
-	;
-
-
-
+	UPROPERTY(meta = (BindWidget))
+	UBorder* HouseButtonBorder;
+	UPROPERTY(meta = (BindWidget))
+	UBorder* MaterialButtonBorder;
+	UPROPERTY(meta = (BindWidget))
+	UBorder* InteriorButtonBorder;
 };

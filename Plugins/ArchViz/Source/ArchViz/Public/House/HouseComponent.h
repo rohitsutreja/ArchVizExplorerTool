@@ -20,23 +20,5 @@ public:
 
 	void Rotate90Degree();
 
-	UPROPERTY()
-	UPropertyPanelWidget* PropertyPanelUI;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UPropertyPanelWidget> PropertyPanelClass;
-
-
-	UFUNCTION()
-	virtual void OnDeleteButtonClicked() ;
-
-	virtual void BeginPlay() override;
-
-	void ShowPropertyPanel();
-
-	void HidePropertyPanel();
-
-	virtual void Destroyed() override;
-
 
 };

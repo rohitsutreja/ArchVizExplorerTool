@@ -13,9 +13,8 @@ class UVerticalBox;
 class UGridPanel;
 class UWidgetSwitcher;
 class UButton;
-/**
- *
- */
+
+
 UCLASS()
 class ARCHVIZ_API UPropertyPanelWidget : public UUserWidget
 {

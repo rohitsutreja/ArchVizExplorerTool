@@ -7,6 +7,7 @@
 #include "Widgets/PropertyPanelWidget.h"
 #include "RoadSplineActor.generated.h"
 
+class USplineMeshComponent;
 struct FSplinePoint;
 class USplineComponent;
 /**
@@ -14,12 +15,16 @@ class USplineComponent;
  */
 
 
+
+DECLARE_DELEGATE(FOnRoadDelete);
+
 UENUM()
 enum class ERoadType
 {
 	Sharp,
 	Curve
 };
+
 UCLASS()
 class ARCHVIZ_API ARoadSplineActor : public AArchActor
 {
@@ -28,11 +33,15 @@ class ARCHVIZ_API ARoadSplineActor : public AArchActor
 
 
 public:
+
+	FOnRoadDelete OnRoadDelete;
+
 	ARoadSplineActor();
 
 	void OnConstruction(const FTransform& Transform) override;
 
 	void DestroyRoad();
+
 	void AddSplinePoint(const FVector& Location);
 
 	void UpdateRoad();
@@ -48,7 +57,9 @@ public:
 	TArray<FVector> SplinePoints;
 
 	UPROPERTY()
-	TArray<UStaticMeshComponent*> SplineMeshComponents;
+	TArray<USplineMeshComponent*> SplineMeshComponents;
+
+
 
 	UPROPERTY()
 	float Width = 400;
@@ -56,16 +67,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	ERoadType TypeOfRoad = ERoadType::Sharp;
 
-
-	UPROPERTY()
-	UPropertyPanelWidget* PropertyPanelUI;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UPropertyPanelWidget> PropertyPanelClass;
-
-
-	UFUNCTION()
-	void OnDeleteButtonDown();
 
 	UFUNCTION()
 	void OnWidthChanged(float InValue);
@@ -76,6 +77,8 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
 
-
+	virtual void HighLightBorder() override;
+	virtual void UnHighLightBorder() override;
 };

@@ -18,7 +18,6 @@ ADoorActor::ADoorActor()
 
     DoorFrameComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorFrame"));
     DoorFrameComponent->SetupAttachment(RootComponent);
-  //  DoorFrameComponent->SetRelativeLocation({0,0,0});
 
     DoorComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Door"));
     DoorComponent->SetupAttachment(DoorFrameComponent);

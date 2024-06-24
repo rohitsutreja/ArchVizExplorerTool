@@ -3,20 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
-#include "House/DoorActor.h"
-#include "House/HouseComponent.h"
-#include "Roads/RoadSplineActor.h"
-#include "Widgets/HouseConstructionWidget.h"
-#include "Widgets/MainControllerUI.h"
 #include "ArchVizController.generated.h"
 
 
+class UArchVizManager;
+class URoadConstructionManager;
+class UHouseConstructionManager;
 class URoadConstructionWidget;
+class UHouseConstructionWidget;
+class UMainControllerUI;
 class AWallActor;
 class AFloorActor;
 class UInputMappingContext;
+
 
 UENUM(BlueprintType)
 enum class EMode : uint8
@@ -25,11 +25,9 @@ enum class EMode : uint8
 	HouseConstruction,
 	InteriorDesign,
 	MaterialChanger
-
 };
-/**
- * 
- */
+
+
 UCLASS()
 class ARCHVIZ_API AArchVizController : public APlayerController
 {
@@ -59,40 +57,25 @@ public:
 	TSubclassOf<UHouseConstructionWidget> HouseConstructionUIClass;
 
 
-
 	UPROPERTY()
-	URoadConstructionWidget* RoadConstructionUI;
+	URoadConstructionManager* RoadConstructionManager;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<URoadConstructionWidget> RoadConstructionUIClass;
-
-
-
+	TSubclassOf<URoadConstructionManager> RoadConstructionManagerClass;
 
 	UPROPERTY()
-	ARoadSplineActor* CurrentRoadSpline;
+	UHouseConstructionManager* HouseConstructionManager;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ARoadSplineActor> RoadSplineClass;
+	TSubclassOf<UHouseConstructionManager> HouseConstructionManagerClass;
+
+	UPROPERTY()
+	UArchVizManager* CurrentManager;
 
 
-
-	UFUNCTION()
-	void CreateAndSelectWall();
-
-	UFUNCTION()
-	void CreateAndSelectFloor();
-
-	UFUNCTION()
-	void CreateAndSelectDoor();
-
-
-	UFUNCTION()
-	void CreateNewRoad();
-	UFUNCTION()
-	void OnRoadModeChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 	virtual void BeginPlay() override;
-
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	FSlateBrush GetBrushWithTint(const FLinearColor& Color);
 
 
 	void CleanUp();
@@ -112,26 +95,16 @@ public:
 
 
 
-	void OnLeftMouseButtonDown(const FInputActionValue& InputActionValue);
+	
+	AActor* GetActorUnderCursor(const TArray<AActor*>& IgnoredActors = {});
+	UPrimitiveComponent* GetComponentUnderCursor(const TArray<AActor*>& IgnoredActors = {});
+	FHitResult GetHitResult(const TArray<AActor*>& IgnoredActors = {}) const;
 
-	void SetupInputComponent() override;
 
 	void SetUpInputForRoadConstructionMode();
-	void OnRKeyDown();
-
-	bool IsCurrentActorMoving();
-	void SelectHouseComponentActorUnderCursor();
-	AActor* GetActorUnderCursor();
-	void DeselectCurrentActor();
-	USceneComponent* GetComponentUnderCursor();
-	void StartActorPlacement();
-	void EndActorPlacement();
-	void UpdateActorPlacement();
-	void OnMKeyDown();
-
 	void SetUpInputForHouseConstructionMode();
 	void SetUpInputForInteriorDesignMode();
-	void DestroySelectedActor();
+
 
 	UPROPERTY()
 	UInputMappingContext* RoadConstructionMapping;
@@ -141,24 +114,5 @@ public:
 
 	UPROPERTY()
 	UInputMappingContext* InteriorDesignMapping;
-
-
-
-	UPROPERTY()
-	AHouseComponent* SelectedActor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<AWallActor> WallClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<AFloorActor> FloorClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<ADoorActor> DoorClass;
-
-
-
-	bool bIsMovingWithCursor = false;
-
 
 };
