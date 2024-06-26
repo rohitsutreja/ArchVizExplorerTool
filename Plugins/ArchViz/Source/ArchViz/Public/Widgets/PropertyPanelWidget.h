@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PropertyPanelWidget.generated.h"
 
+class UScrollableListWidget;
 class UComboBoxString;
 class UTextBlock;
 class USpinBox;
@@ -36,6 +37,8 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UGridPanel* FloorGridPanel;
+
+
 
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* WidgetSwitcherContainer;
@@ -69,7 +72,21 @@ public:
 	USpinBox* RoadWidthValue;
 
 
+	UPROPERTY(meta = (BindWidget))
+	UScrollableListWidget* WallMaterialList;
 
+
+	UPROPERTY(meta = (BindWidget))
+	UScrollableListWidget* RoadMaterialList;
+
+	UPROPERTY(meta = (BindWidget))
+	UScrollableListWidget* FloorMaterialList;
+
+	UPROPERTY(meta = (BindWidget))
+	UScrollableListWidget* DoorMaterialList;
+
+	UPROPERTY(meta = (BindWidget))
+	UScrollableListWidget* DoorFrameMaterialList;
 
 
 

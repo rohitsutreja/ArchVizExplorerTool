@@ -3,12 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DataAssets/MaterialDataAsset.h"
 #include "GameFramework/Actor.h"
 #include "ArchActor.generated.h"
 
+
+
+
 class UPropertyPanelWidget;
 
-UCLASS()
+UCLASS(Abstract)
 class ARCHVIZ_API AArchActor : public AActor
 {
 	GENERATED_BODY()
@@ -19,7 +23,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
 
 public:	
 	virtual void Tick(float DeltaTime) override;
@@ -33,11 +36,9 @@ public:
 	UFUNCTION()
 	virtual void OnDeleteButtonClicked();
 
-
 	void ShowPropertyPanel();
 	void HidePropertyPanel();
 
-
-	virtual void HighLightBorder();
-	virtual void UnHighLightBorder();
+	virtual void HighLightBorder() PURE_VIRTUAL(AArchActor::HighLightBorder, );
+	virtual void UnHighLightBorder() PURE_VIRTUAL(AArchActor::HighLightBorder, );
 };

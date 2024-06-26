@@ -34,11 +34,17 @@ public:
 	UPROPERTY()
 	UProceduralMeshComponent* ProcMesh;
 
+	UPROPERTY()
+	UMaterialInterface* Material;
+
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 	virtual void HighLightBorder() override;
 	virtual void UnHighLightBorder() override;
 
+	UFUNCTION()
+
+	void SetMaterial(FMaterialInfo MaterialInfo);
 
 	UFUNCTION()
 	void UpdateDimensions(float X);

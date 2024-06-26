@@ -3,3 +3,9 @@
 
 #include "Managers/ArchVizManager.h"
 
+#include "ArchVizController.h"
+
+void UArchVizManager::SetUp()
+{
+	Controller = Cast<AArchVizController>(GetWorld()->GetFirstPlayerController());
+}

@@ -14,7 +14,7 @@ public:
 	UPROPERTY()
 	AArchVizController* Controller;
 
-	virtual void SetUp() PURE_VIRTUAL(UArchVizManager::SetUp, );
+	virtual void SetUp();
 	virtual void Start() PURE_VIRTUAL(UArchVizManager::Start, );
 	virtual void End() PURE_VIRTUAL(UArchVizManager::End, );
 };

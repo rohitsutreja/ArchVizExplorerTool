@@ -7,6 +7,7 @@
 #include "Components/SpinBox.h"
 #include "Components/TextBlock.h"
 #include "House/DoorActor.h"
+#include "Widgets/ScrollableListWidget.h"
 
 AWallActor::AWallActor()
 {
@@ -40,6 +41,9 @@ void AWallActor::BeginPlay()
 		PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Wall")));
 
 		PropertyPanelUI->WallLengthValue->OnValueChanged.AddDynamic(this, &AWallActor::SetLength);
+
+		PropertyPanelUI->WallMaterialList->OnMaterialChange.AddDynamic(this, &AWallActor::SetMaterial);
+
 	}
 
 	UpdateWall();
@@ -78,6 +82,10 @@ void AWallActor::UpdateWall()
 		WallSegment->SetStaticMesh(WallSegmentMesh);
 		WallSegment->SetRelativeLocation(FVector(i * LengthOfSegment, 0, 0));
 		WallSegment->RegisterComponent();
+		if (IsValid(Material))
+		{
+			WallSegment->SetMaterial(0, Material);
+		}
 		ArrayOfWallSegments.Add(WallSegment);
 	}
 
@@ -154,6 +162,12 @@ void AWallActor::UnHighLightBorder()
 	}
 }
 
+void AWallActor::SetMaterial(FMaterialInfo MaterialInfo)
+{
+	Material = MaterialInfo.Material;
+
+	UpdateWall();
+}
 
 
 void AWallActor::AttachDoorToComponent(UStaticMeshComponent* Component, ADoorActor* Door)
@@ -188,7 +202,6 @@ void AWallActor::DetachDoorFromComponent(UStaticMeshComponent* Component)
 
 		IndexToDoorMapping.Remove({ WallSegmentIdx });
 	}
-
 
 
 	UpdateWall();

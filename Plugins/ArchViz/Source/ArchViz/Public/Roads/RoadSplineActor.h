@@ -59,7 +59,8 @@ public:
 	UPROPERTY()
 	TArray<USplineMeshComponent*> SplineMeshComponents;
 
-
+	UPROPERTY()
+	UMaterialInterface* Material;
 
 	UPROPERTY()
 	float Width = 400;
@@ -81,4 +82,8 @@ public:
 
 	virtual void HighLightBorder() override;
 	virtual void UnHighLightBorder() override;
+
+
+	UFUNCTION()
+	void SetMaterial(FMaterialInfo MaterialInfo);
 };

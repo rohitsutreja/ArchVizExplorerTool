@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
+#include  "Components/Border.h"
 #include "MainControllerUI.generated.h"
 
 class UBorder;
@@ -35,4 +37,17 @@ public:
 	UBorder* MaterialButtonBorder;
 	UPROPERTY(meta = (BindWidget))
 	UBorder* InteriorButtonBorder;
+
+
+	UPROPERTY(meta =(BindWidget))
+	UTextBlock* NotificationText;
+
+	UPROPERTY(meta = (BindWidget))
+	UBorder* NotificationPanel;
+
+	UFUNCTION(BlueprintCallable)
+	void ShowNotification(const FString& Message);
+
+	UFUNCTION(BlueprintCallable)
+	void HideNotification();
 };

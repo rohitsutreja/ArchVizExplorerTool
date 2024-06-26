@@ -5,6 +5,7 @@
 
 #include "Components/SpinBox.h"
 #include "Components/TextBlock.h"
+#include "Widgets/ScrollableListWidget.h"
 
 
 AFloorActor::AFloorActor()
@@ -123,6 +124,10 @@ void AFloorActor::GenerateFloor()
 
 
 	ProcMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
+	if(IsValid(Material))
+	{
+		ProcMesh->SetMaterial(0, Material);
+	}
 
 
 }
@@ -146,6 +151,12 @@ void AFloorActor::UnHighLightBorder()
 	ProcMesh->SetRenderCustomDepth(false);
 }
 
+void AFloorActor::SetMaterial(FMaterialInfo MaterialInfo)
+{
+	Material = MaterialInfo.Material;
+	GenerateFloor();
+}
+
 void AFloorActor::UpdateDimensions(float X)
 {
 	Length = PropertyPanelUI->FloorLength->GetValue();
@@ -162,15 +173,18 @@ void AFloorActor::BeginPlay()
 	Super::BeginPlay();
 	if(IsValid(PropertyPanelUI))
 	{
-		PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Floor")));
-
-
 		PropertyPanelUI->SwitchToWidget(1);
+
+		PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Floor")));
 
 		PropertyPanelUI->FloorLength->OnValueChanged.AddDynamic(this, &AFloorActor::UpdateDimensions);
 		PropertyPanelUI->FloorWidth->OnValueChanged.AddDynamic(this, &AFloorActor::UpdateDimensions);
 		PropertyPanelUI->FloorHeight->OnValueChanged.AddDynamic(this, &AFloorActor::UpdateDimensions);
 
+		PropertyPanelUI->FloorMaterialList->OnMaterialChange.AddDynamic(this, &AFloorActor::SetMaterial);
+
 	}
 
 }
+
+

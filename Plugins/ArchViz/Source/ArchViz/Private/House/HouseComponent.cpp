@@ -16,7 +16,7 @@ void AHouseComponent::SnapActorToGrid(const FVector& GridSize)
 	SetActorLocation(ActorLocation);
 }
 
-void AHouseComponent::Rotate90Degree()
+void AHouseComponent::Rotate()
 {
 	FRotator CurrentRotation = GetActorRotation();
 
@@ -25,5 +25,23 @@ void AHouseComponent::Rotate90Degree()
 	NewRotation.Yaw = StaticCast<int32>(CurrentRotation.Yaw + 90) % 360;
 
 	SetActorRotation(NewRotation);
+}
+
+void AHouseComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if(EndPlayReason == EEndPlayReason::Type::Destroyed)
+	{
+		TArray<USceneComponent*> ChildActors;
+
+		RootComponent->GetChildrenComponents(true, ChildActors);
+
+		for (auto& ChildActor : ChildActors)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Inside"));
+			ChildActor->GetAttachParentActor()->Destroy();
+		}
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 

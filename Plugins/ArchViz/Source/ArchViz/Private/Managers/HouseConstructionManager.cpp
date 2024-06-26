@@ -14,6 +14,7 @@
 
 void UHouseConstructionManager::Start()
 {
+	
 	if (IsValid(HouseConstructionUI))
 	{
 		HouseConstructionUI->AddToViewport(0);
@@ -22,8 +23,8 @@ void UHouseConstructionManager::Start()
 
 void UHouseConstructionManager::SetUp()
 {
+	Super::SetUp();
 
-	Controller = Cast<AArchVizController>(GetWorld()->GetFirstPlayerController());
 	HouseConstructionUI = CreateWidget<UHouseConstructionWidget>(GetWorld(), HouseConstructionUIClass);
 
 	if (IsValid(HouseConstructionUI))
@@ -70,6 +71,8 @@ void UHouseConstructionManager::CreateAndSelectWall()
 		SpawnParams);
 
 	SelectedActor->HighLightBorder();
+
+	Controller->Notify(TEXT("Wall Created"));
 
 	bIsMovingWithCursor = true;
 }
@@ -161,6 +164,8 @@ void UHouseConstructionManager::StartActorPlacement()
 {
 	if (IsValid(SelectedActor))
 	{
+
+		SelectedActor->HidePropertyPanel();
 		if (auto Door = Cast<ADoorActor>(SelectedActor))
 		{
 			Door->DetachFromWall();
@@ -172,11 +177,9 @@ void UHouseConstructionManager::StartActorPlacement()
 
 void UHouseConstructionManager::EndActorPlacement()
 {
-	bIsMovingWithCursor = false;
-
 	if (SelectedActor->IsA(ADoorActor::StaticClass()))
 	{
-		auto HitComponent = Controller->GetComponentUnderCursor({SelectedActor});
+		auto HitComponent = Controller->GetComponentUnderCursor({ SelectedActor });
 		auto HitActor = HitComponent->GetAttachParentActor();
 
 		if (auto Wall = Cast<AWallActor>(HitActor))
@@ -184,7 +187,15 @@ void UHouseConstructionManager::EndActorPlacement()
 			Wall->AttachDoorToComponent(Cast<UStaticMeshComponent>(HitComponent), Cast<ADoorActor>(SelectedActor));
 			Wall->UnHighLightBorder();
 		}
+		else
+		{
+			Controller->Notify(TEXT("Door can only be placed on wall"));
+			return;
+		}
 	}
+
+
+	bIsMovingWithCursor = false;
 };
 
 void UHouseConstructionManager::UpdateActorPlacement()
@@ -245,13 +256,14 @@ void UHouseConstructionManager::OnRKeyDown()
 {
 	if (IsValid(SelectedActor))
 	{
-		SelectedActor->Rotate90Degree();
+		SelectedActor->Rotate();
 	}
 }
 
 void UHouseConstructionManager::OnMKeyDown()
 {
 	StartActorPlacement();
+
 };
 
 

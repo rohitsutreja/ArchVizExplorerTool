@@ -12,6 +12,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Managers/RoadConstructionManager.h"
 #include "Widgets/RoadConstructionWidget.h"
+#include "Widgets/ScrollableListWidget.h"
 
 ARoadSplineActor::ARoadSplineActor()
 {
@@ -92,6 +93,7 @@ void ARoadSplineActor::UpdateRoad()
 				SplineMeshComponent->AttachToComponent(Spline, FAttachmentTransformRules::KeepRelativeTransform);
 				SplineMeshComponent->SetStaticMesh(SplineMesh);
 				SplineMeshComponent->RegisterComponent();
+
 				SplineMeshComponent->SetRenderCustomDepth(true);
 				SplineMeshComponent->CustomDepthStencilValue = 2;
 
@@ -99,6 +101,7 @@ void ARoadSplineActor::UpdateRoad()
 			}
 
 			USplineMeshComponent* SplineMeshComponent = SplineMeshComponents[SegmentIndex];
+
 			SplineMeshComponent->SetVisibility(true);
 
 			float StrechedMeshLength = SegmentLength / NumberOfSegments;
@@ -116,6 +119,10 @@ void ARoadSplineActor::UpdateRoad()
 			SplineMeshComponent->SetEndScale(FVector2D(ScaleFactor, 1));
 			SplineMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 			SplineMeshComponent->SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
+			if(IsValid(Material))
+			{
+				SplineMeshComponent->SetMaterial(0, Material);
+			}
 
 			++SegmentIndex;
 		}
@@ -154,13 +161,20 @@ void ARoadSplineActor::BeginPlay()
 
 	if (IsValid(PropertyPanelUI))
 	{
+		PropertyPanelUI->SwitchToWidget(3);
+
+		PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Road")));
+
 		PropertyPanelUI->RoadWidthValue->OnValueChanged.AddDynamic(this, &ARoadSplineActor::OnWidthChanged);
 
 		PropertyPanelUI->RoadType->OnSelectionChanged.AddDynamic(this, &ARoadSplineActor::OnRoadTypeChanged);
 
-		PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Road")));
+		PropertyPanelUI->RoadMaterialList->OnMaterialChange.AddDynamic(this, &ARoadSplineActor::SetMaterial);
 
-		PropertyPanelUI->SwitchToWidget(3);
+
+
+
+
 	}
 }
 
@@ -196,6 +210,12 @@ void ARoadSplineActor::UnHighLightBorder()
 	{
 		comp->SetRenderCustomDepth(false);
 	}
+}
+
+void ARoadSplineActor::SetMaterial(FMaterialInfo MaterialInfo)
+{
+	Material = MaterialInfo.Material;
+	UpdateRoad();
 }
 
 

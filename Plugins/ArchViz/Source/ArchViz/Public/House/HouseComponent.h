@@ -10,15 +10,15 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class ARCHVIZ_API AHouseComponent : public AArchActor
 {
 	GENERATED_BODY()
 
 public:
+
 	void SnapActorToGrid(const FVector& GridSize);
+	void Rotate();
 
-	void Rotate90Degree();
-
-
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 };

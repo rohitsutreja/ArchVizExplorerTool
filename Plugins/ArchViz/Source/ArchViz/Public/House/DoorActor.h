@@ -36,19 +36,24 @@ public:
 	void OpenDoor();
 	void CloseDoor();
 
+
 	UFUNCTION()
 	void ToggleDoor();
 
-
 	bool bIsOpen = false;
 
+	UFUNCTION()
+	void SetDoorMaterial(FMaterialInfo MaterialInfo);
+	UFUNCTION()
+	void SetDoorFrameMaterial(FMaterialInfo MaterialInfo);
+
+
 	virtual void BeginPlay() override;
-
-	virtual void HighLightBorder() override;
-
-	virtual void UnHighLightBorder() override;
-	void DetachFromWall();
-
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	virtual void HighLightBorder() override;
+	virtual void UnHighLightBorder() override;
+
+
+	void DetachFromWall();
 };

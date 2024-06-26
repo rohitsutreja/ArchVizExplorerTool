@@ -2,7 +2,9 @@
 
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
+#include "DataAssets/MaterialDataAsset.h"
 #include "House/HouseComponent.h"
+#include "Widgets/ScrollableListWidget.h"
 
 AArchActor::AArchActor()
 {
@@ -14,14 +16,6 @@ void AArchActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-}
-
-void AArchActor::HighLightBorder()
-{
-}
-
-void AArchActor::UnHighLightBorder()
-{
 }
 
 void AArchActor::BeginPlay()

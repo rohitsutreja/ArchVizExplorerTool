@@ -33,6 +33,9 @@ public:
 	UStaticMesh* DoorHallSegment;
 
 	UPROPERTY()
+	UMaterialInterface* Material;
+
+	UPROPERTY()
 	TArray<UStaticMeshComponent*> ArrayOfWallSegments;
 
 	TArray<int32> ArrayOfDoorIndices;
@@ -46,11 +49,17 @@ public:
 
 	void UpdateWall();
 
+
+
 	UFUNCTION()
 	void SetLength(float Length);
 
 	virtual void HighLightBorder() override;
 	virtual void UnHighLightBorder() override;
+
+
+	UFUNCTION()
+	 void SetMaterial(FMaterialInfo MaterialInfo);
 
 	void AttachDoorToComponent(UStaticMeshComponent* Component, ADoorActor* Door);
 	void DetachDoorFromComponent(UStaticMeshComponent* Component);

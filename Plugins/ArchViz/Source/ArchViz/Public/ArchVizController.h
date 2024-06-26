@@ -10,6 +10,7 @@
 class UArchVizManager;
 class URoadConstructionManager;
 class UHouseConstructionManager;
+class UInteriorDesignManager;
 class URoadConstructionWidget;
 class UHouseConstructionWidget;
 class UMainControllerUI;
@@ -42,8 +43,7 @@ public:
 	UPROPERTY()
 	EMode CurrentMode = EMode::RoadConstruction;
 
-
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	UMainControllerUI* MainUI;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -70,15 +70,26 @@ public:
 	TSubclassOf<UHouseConstructionManager> HouseConstructionManagerClass;
 
 	UPROPERTY()
+	UInteriorDesignManager* InteriorDesignManager;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UInteriorDesignManager> InteriorDesignManagerClass;
+
+
+
+	UPROPERTY()
 	UArchVizManager* CurrentManager;
 
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	FSlateBrush GetBrushWithTint(const FLinearColor& Color);
 
-
 	void CleanUp();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void Notify(const FString& Message);
 
 
 	UFUNCTION()
@@ -94,8 +105,6 @@ public:
 	void InitMaterialChangeMode();
 
 
-
-	
 	AActor* GetActorUnderCursor(const TArray<AActor*>& IgnoredActors = {});
 	UPrimitiveComponent* GetComponentUnderCursor(const TArray<AActor*>& IgnoredActors = {});
 	FHitResult GetHitResult(const TArray<AActor*>& IgnoredActors = {}) const;

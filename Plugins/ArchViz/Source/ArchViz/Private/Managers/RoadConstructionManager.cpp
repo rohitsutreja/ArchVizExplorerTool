@@ -66,7 +66,7 @@ void URoadConstructionManager::HandleButtonClick()
 
 void URoadConstructionManager::SetUp()
 {
-	Controller = Cast<AArchVizController>(GetWorld()->GetFirstPlayerController());
+	Super::SetUp();
 
 	RoadConstructionUI = CreateWidget<URoadConstructionWidget>(GetWorld(), RoadConstructionUIClass);
 

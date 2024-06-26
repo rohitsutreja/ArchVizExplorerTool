@@ -2,12 +2,10 @@
 
 
 #include "House/DoorActor.h"
+#include "House/WallActor.h"
 
 #include "ComponentUtils.h"
-#include "Components/Button.h"
-#include "Components/SpinBox.h"
-#include "Components/TextBlock.h"
-#include "House/WallActor.h"
+#include "Widgets/ScrollableListWidget.h"
 
 ADoorActor::ADoorActor()
 {
@@ -64,6 +62,17 @@ void ADoorActor::ToggleDoor()
 
     }
 }
+
+void ADoorActor::SetDoorMaterial(FMaterialInfo MaterialInfo)
+{
+    DoorComponent->SetMaterial(0, MaterialInfo.Material);
+}
+
+void ADoorActor::SetDoorFrameMaterial(FMaterialInfo MaterialInfo)
+{
+    DoorFrameComponent->SetMaterial(0, MaterialInfo.Material);
+}
+
 void ADoorActor::BeginPlay()
 {
 	Super::BeginPlay();
@@ -78,6 +87,12 @@ void ADoorActor::BeginPlay()
         PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Door")));
 
         PropertyPanelUI->DoorOpenCloseButton->OnClicked.AddDynamic(this, &ADoorActor::ToggleDoor);
+
+        PropertyPanelUI->DoorMaterialList->OnMaterialChange.AddDynamic(this, &ADoorActor::SetDoorMaterial);
+        PropertyPanelUI->DoorFrameMaterialList->OnMaterialChange.AddDynamic(this, &ADoorActor::SetDoorFrameMaterial);
+
+
+
 
     }
 
@@ -118,12 +133,10 @@ void ADoorActor::DetachFromWall()
 }
 void ADoorActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-
-    if (EndPlayReason == EEndPlayReason::Destroyed)
+    if (EndPlayReason == EEndPlayReason::Type::Destroyed)
     {
         DetachFromWall();
     }
-
 
 	Super::EndPlay(EndPlayReason);
 }

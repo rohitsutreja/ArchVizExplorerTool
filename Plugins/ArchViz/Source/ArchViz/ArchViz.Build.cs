@@ -41,11 +41,9 @@ public class ArchViz : ModuleRules
 				"InputCore",
 				"EnhancedInput",
 				"UMG",
-				"ProceduralMeshComponent"
-
-				// ... add private dependencies that you statically link with here ...	
-			}
-			);
+				"ProceduralMeshComponent",
+            }
+            );
 		
 		
 		DynamicallyLoadedModuleNames.AddRange(

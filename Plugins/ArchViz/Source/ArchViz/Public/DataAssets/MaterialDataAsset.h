@@ -12,18 +12,15 @@
 
 
 USTRUCT(BlueprintType)
-struct FMaterialData
+struct FMaterialInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	UTexture* Thumbnail;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	UMaterialInterface* Material;
-
-	UPROPERTY()
-	FString Title;
 };
 
 
@@ -33,9 +30,16 @@ class ARCHVIZ_API UMaterialDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
 
-
-
 public:
 	UPROPERTY(EditAnywhere)
-	TArray<FMaterialData> ArrayOfMaterials;
+	TArray<FMaterialInfo> ArrayOfWallMaterials;
+
+	UPROPERTY(EditAnywhere)
+	TArray<FMaterialInfo> ArrayOfFloorMaterials;
+
+	UPROPERTY(EditAnywhere)
+	TArray<FMaterialInfo> ArrayOfRoadMaterials;
+
+	UPROPERTY(EditAnywhere)
+	TArray<FMaterialInfo> ArrayOfDoorMaterials;
 };
