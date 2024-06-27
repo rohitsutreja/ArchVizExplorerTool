@@ -1,19 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "ArchActor.h"
-#include "Widgets/PropertyPanelWidget.h"
+#include "DataAssets/MaterialDataAsset.h"
 #include "RoadSplineActor.generated.h"
-
-class USplineMeshComponent;
-struct FSplinePoint;
-class USplineComponent;
-/**
- *
- */
-
 
 
 DECLARE_DELEGATE(FOnRoadDelete);
@@ -21,69 +11,85 @@ DECLARE_DELEGATE(FOnRoadDelete);
 UENUM()
 enum class ERoadType
 {
-	Sharp,
-	Curve
+    Sharp,
+    Curve
 };
+
+class USplineMeshComponent;
+struct FSplinePoint;
+class USplineComponent;
+
+
 
 UCLASS()
 class ARCHVIZ_API ARoadSplineActor : public AArchActor
 {
-	GENERATED_BODY()
-
-
+    GENERATED_BODY()
 
 public:
+    ARoadSplineActor();
 
-	FOnRoadDelete OnRoadDelete;
-
-	ARoadSplineActor();
-
-	void OnConstruction(const FTransform& Transform) override;
-
-	void DestroyRoad();
-
-	void AddSplinePoint(const FVector& Location);
-
-	void UpdateRoad();
+    virtual void OnConstruction(const FTransform& Transform) override;
+    virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USplineComponent* Spline;
+    void DestroyRoad();
+    void AddSplinePoint(const FVector& Location);
+    bool RemoveLastSplinePoint();
+    void UpdateRoad();
 
-	UPROPERTY(EditDefaultsOnly)
-	UStaticMesh* SplineMesh;
+    void SynchronizePropertyPanel();
 
-	UPROPERTY()
-	TArray<FVector> SplinePoints;
-
-	UPROPERTY()
-	TArray<USplineMeshComponent*> SplineMeshComponents;
-
-	UPROPERTY()
-	UMaterialInterface* Material;
-
-	UPROPERTY()
-	float Width = 400;
-
-	UPROPERTY(EditDefaultsOnly)
-	ERoadType TypeOfRoad = ERoadType::Sharp;
+    virtual void HighLightBorder() override;
+    virtual void UnHighLightBorder() override;
 
 
-	UFUNCTION()
-	void OnWidthChanged(float InValue);
+    UStaticMesh* GetSourceStaticMesh() const;
+    const TArray<FVector>& GetSplinePoints() const;
+    UMaterialInterface* GetMaterial() const;
+    float GetWidth() const;
+    ERoadType GetTypeOfRoad() const;
 
-	UFUNCTION()
-	void OnRoadTypeChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+    void SetSourceSplineMesh(UStaticMesh* InSplineMesh);
+    void SetSplinePoints(const TArray<FVector>& InSplinePoints);
+    void SetMaterial(UMaterialInterface* InMaterial);
+    void SetWidth(float InWidth);
+    void SetTypeOfRoad(ERoadType InTypeOfRoad);
 
+    // Delegates
+    FOnRoadDelete OnRoadDelete;
 
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	
+    // UI Property Bindings
+    UFUNCTION()
+    void OnWidthChanged(float InValue);
 
-	virtual void HighLightBorder() override;
-	virtual void UnHighLightBorder() override;
+    UFUNCTION()
+    void OnRoadTypeChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
+    UFUNCTION()
+    void OnMaterialChange(FMaterialInfo MaterialInfo);
 
-	UFUNCTION()
-	void SetMaterial(FMaterialInfo MaterialInfo);
+protected:
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    USplineComponent* Spline;
+
+    UPROPERTY(EditDefaultsOnly)
+    UStaticMesh* SourceStaticMesh;
+
+    UPROPERTY()
+    TArray<FVector> SplinePoints;
+
+    UPROPERTY()
+    TArray<USplineMeshComponent*> SplineMeshComponents;
+
+    UPROPERTY()
+    UMaterialInterface* Material;
+
+    UPROPERTY()
+    float Width = 400.0f;
+
+    UPROPERTY(EditDefaultsOnly)
+    ERoadType TypeOfRoad = ERoadType::Sharp;
 };

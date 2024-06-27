@@ -6,6 +6,7 @@
 #include "Managers/ArchVizManager.h"
 #include "HouseConstructionManager.generated.h"
 
+class AWindowActor;
 class AWallActor;
 class AFloorActor;
 class ADoorActor;
@@ -39,6 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ADoorActor> DoorClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AWindowActor> WindowClass;
+
 	bool bIsMovingWithCursor = false;
 
 
@@ -57,6 +61,9 @@ public:
 
 	UFUNCTION()
 	void CreateAndSelectDoor();
+
+	UFUNCTION()
+	void CreateAndSelectWindow();
 
 
 	void SelectHouseComponentActorUnderCursor();

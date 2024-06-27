@@ -3,67 +3,104 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WindowActor.h"
 #include "House/HouseComponent.h"
+#include "SaveAndLoad/ArchVizSave.h"
+#include "DataAssets/MaterialDataAsset.h"
 #include "WallActor.generated.h"
 
 class ADoorActor;
+
 /**
- * 
+ * AWallActor class that represents a wall actor in the game.
  */
+
+
 UCLASS()
 class ARCHVIZ_API AWallActor : public AHouseComponent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
+    AWallActor();
 
-	AWallActor();
+    virtual void OnConstruction(const FTransform& Transform) override;
+    virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	int32 NumberOfWallSegments;
+    void UpdateWall();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	int32 LengthOfSegment;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	UStaticMesh* WallSegmentMesh;
-
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	UStaticMesh* DoorHallSegment;
-
-	UPROPERTY()
-	UMaterialInterface* Material;
-
-	UPROPERTY()
-	TArray<UStaticMeshComponent*> ArrayOfWallSegments;
-
-	TArray<int32> ArrayOfDoorIndices;
-
-	TMap<int32, ADoorActor*> IndexToDoorMapping;
-
-	void OnConstruction(const FTransform& Transform) override;
-
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-	void UpdateWall();
+    bool AttachDoorToComponent(UStaticMeshComponent* Component, ADoorActor* Door);
+    void DetachDoorFromComponent(UStaticMeshComponent* Component);
+    void RemoveAllDoorsFromWall();
+    void AddDoorAtIndex(int32 Idx, ADoorActor* Door);
 
 
+    bool AttachWindowToComponent(UStaticMeshComponent* Component, AWindowActor* Door);
+    void DetachWindowFromComponent(UStaticMeshComponent* Component);
+    void RemoveAllWindowsFromWall();
+    void AddWindowAtIndex(int32 Idx, AWindowActor* Door);
 
-	UFUNCTION()
-	void SetLength(float Length);
+    void SetMaterial(UMaterialInterface* InMaterial);
 
-	virtual void HighLightBorder() override;
-	virtual void UnHighLightBorder() override;
+    void SynchronizePropertyPanel();
+
+    // Getters
+    int32 GetNumberOfWallSegments() const;
+    int32 GetLengthOfSegment() const;
+    UStaticMesh* GetWallSegmentMesh() const;
+    UStaticMesh* GetDoorHallSegment() const;
+    UMaterialInterface* GetMaterial() const;
+    const TArray<UStaticMeshComponent*>& GetArrayOfWallSegments() const;
+    const TMap<int32, ADoorActor*>& GetIndexToDoorMapping() const;
+
+    // Setters
+    void SetNumberOfWallSegments(int32 InNumberOfWallSegments);
+    void SetLengthOfSegment(int32 InLengthOfSegment);
+    void SetWallSegmentMesh(UStaticMesh* InWallSegmentMesh);
+    void SetDoorHallSegment(UStaticMesh* InDoorHallSegment);
+    void SetArrayOfWallSegments(const TArray<UStaticMeshComponent*>& InArrayOfWallSegments);
+    void SetIndexToDoorMapping(const TMap<int32, ADoorActor*>& InIndexToDoorMapping);
+    void SetLength(float Length);
+
+    // UFUNCTIONs
+    UFUNCTION()
+    void OnLengthChange(float Length);
+
+    UFUNCTION()
+    void OnMaterialChange(FMaterialInfo MaterialInfo);
+
+    // Override Functions
+    virtual void HighLightBorder() override;
+    virtual void UnHighLightBorder() override;
+
+protected:
+    // Properties
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    int32 NumberOfWallSegments;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    int32 LengthOfSegment;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    UStaticMesh* WallSegmentMesh;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    UStaticMesh* DoorHallSegment;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    UStaticMesh* WindowSegmentMesh;
 
 
-	UFUNCTION()
-	 void SetMaterial(FMaterialInfo MaterialInfo);
+    UPROPERTY()
+    UMaterialInterface* Material;
 
-	void AttachDoorToComponent(UStaticMeshComponent* Component, ADoorActor* Door);
-	void DetachDoorFromComponent(UStaticMeshComponent* Component);
+    UPROPERTY()
+    TArray<UStaticMeshComponent*> ArrayOfWallSegments;
 
-	void RemoveAllDoorsFromWall();
+    UPROPERTY()
+    TMap<int32, ADoorActor*> IndexToDoorMapping;
 
+    UPROPERTY()
+    TMap<int32, AWindowActor*> IndexToWindowMapping;
 };

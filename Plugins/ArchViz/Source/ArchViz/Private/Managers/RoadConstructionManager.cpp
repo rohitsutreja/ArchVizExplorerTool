@@ -9,15 +9,20 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Roads/RoadSplineActor.h"
+#include "Widgets/PropertyPanelWidget.h"
 
 
 void URoadConstructionManager::CreateNewRoad()
 {
 	CurrentRoadSpline = GetWorld()->SpawnActor<ARoadSplineActor>(RoadSplineClass, FVector::ZeroVector, FRotator::ZeroRotator);
 
+	Controller->Notify(TEXT("Please Select Points to Create Road"));
+
+
+
 	CurrentRoadSpline->OnRoadDelete.BindLambda([this]()
 	{
-			RoadConstructionUI->SaveButtonText->SetText(FText::FromString(TEXT("New Road")));
+			RoadConstructionUI->SaveButtonText->SetText(FText::FromString(TEXT("Start New Road")));
 
 	});
 	ArrayOfRoads.Add(CurrentRoadSpline);
@@ -37,13 +42,18 @@ void URoadConstructionManager::SaveCurrentRoad()
 		CurrentRoadSpline->UnHighLightBorder();
 
 		CurrentRoadSpline = nullptr;
+
+		Controller->Notify(TEXT("Road Saved Successfully."));
+
 	}
 
-	RoadConstructionUI->SaveButtonText->SetText(FText::FromString(TEXT("New Road")));
+	RoadConstructionUI->SaveButtonText->SetText(FText::FromString(TEXT("Start New Road")));
 
 }
 void URoadConstructionManager::Start()
 {
+	Controller->Notify(TEXT("Road Construction Mode Started."));
+
 	if (IsValid(RoadConstructionUI))
 	{
 		RoadConstructionUI->AddToViewport(0);
@@ -97,21 +107,48 @@ void URoadConstructionManager::OnLeftClick()
 	{
 		FVector HitLocation = HitResult.Location;
 
+
+
 		if (IsValid(CurrentRoadSpline))
 		{
+			if(HitResult.GetActor()->IsA(AArchActor::StaticClass()))
+			{
+				Controller->Notify(TEXT("Please Select Valid Point."));
+
+				return;
+			}
 			CurrentRoadSpline->AddSplinePoint(HitLocation);
 			CurrentRoadSpline->UpdateRoad();
 		}
 		else
 		{
-			SelectRoadUnderCursor();
-			
+			if(!SelectRoadUnderCursor())
+			{
+				Controller->Notify(TEXT("Please Start New Road or Select an Existing Road"));
+			};
+		}
+	}
+}
+
+void URoadConstructionManager::OnUKeyDown()
+{
+	if(CurrentRoadSpline)
+	{
+		if(CurrentRoadSpline->RemoveLastSplinePoint())
+		{
+			Controller->Notify(TEXT("Undo"));
+			CurrentRoadSpline->UpdateRoad();
+		}
+		else
+		{
+			Controller->Notify(TEXT("Nothing to undo"));
+
 		}
 	}
 }
 
 
-void URoadConstructionManager::SelectRoadUnderCursor()
+bool URoadConstructionManager::SelectRoadUnderCursor()
 {
 	if(auto ActorUnderCursor = Controller->GetActorUnderCursor({}))
 	{
@@ -125,6 +162,9 @@ void URoadConstructionManager::SelectRoadUnderCursor()
 			{
 				RoadConstructionUI->SaveButtonText->SetText(FText::FromString(TEXT("Save Road")));
 			}
+			return true;
 		}
 	}
+
+	return false;
 }

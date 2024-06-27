@@ -2,8 +2,8 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
-#include "DataAssets/MaterialDataAsset.h"
 #include "GameFramework/Actor.h"
 #include "ArchActor.generated.h"
 
@@ -27,6 +27,8 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+	int32 ID;
+
 	UPROPERTY()
 	UPropertyPanelWidget* PropertyPanelUI;
 
@@ -39,6 +41,17 @@ public:
 	void ShowPropertyPanel();
 	void HidePropertyPanel();
 
+	int32 GetId();
+
 	virtual void HighLightBorder() PURE_VIRTUAL(AArchActor::HighLightBorder, );
 	virtual void UnHighLightBorder() PURE_VIRTUAL(AArchActor::HighLightBorder, );
+
+
+private:
+	inline static int32 NextID = 1;
+
+	static int32 GenerateID()
+	{
+		return NextID++;
+	}
 };

@@ -3,57 +3,85 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WallActor.h"
 #include "House/HouseComponent.h"
+#include "DataAssets/MaterialDataAsset.h"
 #include "DoorActor.generated.h"
 
 /**
- * 
+ *
  */
+
+class AWallActor;
+
 UCLASS()
 class ARCHVIZ_API ADoorActor : public AHouseComponent
 {
-	GENERATED_BODY()
-
+    GENERATED_BODY()
 
 public:
 
-	UPROPERTY()
-	UStaticMeshComponent* DoorFrameComponent;
-
-	UPROPERTY()
-	UStaticMeshComponent* DoorComponent;
+    int32 ParentWallComponentIndex = -1;
 
 
-	UPROPERTY(EditAnywhere)
-	UStaticMesh* DoorMesh;
+    ADoorActor();
 
-	UPROPERTY(EditAnywhere)
-	UStaticMesh* DoorFrameMesh;
+    // Overrides
+    virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	ADoorActor();
+    // Methods
+    void OpenDoor();
+    void CloseDoor();
+    void DetachFromWall();
 
-	void OpenDoor();
-	void CloseDoor();
-
-
-	UFUNCTION()
-	void ToggleDoor();
-
-	bool bIsOpen = false;
-
-	UFUNCTION()
-	void SetDoorMaterial(FMaterialInfo MaterialInfo);
-	UFUNCTION()
-	void SetDoorFrameMaterial(FMaterialInfo MaterialInfo);
+    void SynchronizePropertyPanel();
 
 
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    //Getters
+    UStaticMesh* GetDoorMesh() const;
+    UStaticMesh* GetDoorFrameMesh() const;
+    UMaterialInterface* GetDoorMaterial() const;
+    UMaterialInterface* GetDoorFrameMaterial() const;
 
-	virtual void HighLightBorder() override;
-	virtual void UnHighLightBorder() override;
+
+    bool IsDoorOpen() const;
+
+    //Setters
+    void SetDoorMesh(UStaticMesh* InDoorMesh);
+    void SetDoorFrameMesh(UStaticMesh* InDoorFrameMesh);
+    void SetDoorMaterial(UMaterialInterface* InMaterial);
+    void SetDoorFrameMaterial(UMaterialInterface* InMaterial);
+
+    //overrides
+    virtual void HighLightBorder() override;
+    virtual void UnHighLightBorder() override;
 
 
-	void DetachFromWall();
+    //UFUNCTIONs
+    UFUNCTION()
+    void OnToggleDoor();
+
+    UFUNCTION()
+    void OnDoorMaterialChange(FMaterialInfo MaterialInfo);
+
+    UFUNCTION()
+    void OnDoorFrameMaterialChange(FMaterialInfo MaterialInfo);
+
+
+
+private:
+    UPROPERTY()
+    UStaticMeshComponent* DoorFrameComponent;
+
+    UPROPERTY()
+    UStaticMeshComponent* DoorComponent;
+
+    UPROPERTY(EditAnywhere)
+    UStaticMesh* DoorMesh;
+
+    UPROPERTY(EditAnywhere)
+    UStaticMesh* DoorFrameMesh;
+
+    bool bIsOpen;
 };
+

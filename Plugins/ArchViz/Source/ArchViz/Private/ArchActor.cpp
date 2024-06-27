@@ -2,9 +2,8 @@
 
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
-#include "DataAssets/MaterialDataAsset.h"
 #include "House/HouseComponent.h"
-#include "Widgets/ScrollableListWidget.h"
+
 
 AArchActor::AArchActor()
 {
@@ -21,6 +20,8 @@ void AArchActor::Tick(float DeltaTime)
 void AArchActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	ID = GenerateID();
 
 	PropertyPanelUI = CreateWidget<UPropertyPanelWidget>(GetWorld(), PropertyPanelClass);
 
@@ -55,6 +56,11 @@ void AArchActor::HidePropertyPanel()
 	{
 		PropertyPanelUI->RemoveFromParent();
 	}
+}
+
+int32 AArchActor::GetId()
+{
+	return ID;
 }
 
 void AArchActor::OnDeleteButtonClicked()

@@ -7,48 +7,51 @@
 #include "ProceduralMeshComponent.h"
 #include "FloorActor.generated.h"
 
-
 /**
- * 
+ *
  */
 UCLASS()
 class ARCHVIZ_API AFloorActor : public AHouseComponent
 {
-	GENERATED_BODY()
-
+    GENERATED_BODY()
 
 public:
-	AFloorActor();
+    AFloorActor();
 
-	void GenerateFloor();
+    // Overrides
+    virtual void OnConstruction(const FTransform& Transform) override;
+    virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere)
-	int32 Height;
+    // Methods
+    void GenerateFloor();
+    virtual void HighLightBorder() override;
+    virtual void UnHighLightBorder() override;
 
-	UPROPERTY(EditAnywhere)
-	int32 Width;
+    void SynchronizePropertyPanel();
 
-	UPROPERTY(EditAnywhere)
-	int32 Length;
 
-	UPROPERTY()
-	UProceduralMeshComponent* ProcMesh;
+    // Getters
+    const FVector& GetDimensions() const;
+    UMaterialInterface* GetMaterial() const;
 
-	UPROPERTY()
-	UMaterialInterface* Material;
+    // Setters
+    void SetDimensions(const FVector& InDimensions);
+    void SetMaterial(UMaterialInterface* InMaterial);
 
-	virtual void OnConstruction(const FTransform& Transform) override;
+    //UFUNCTIONs
+    UFUNCTION()
+    void OnMaterialChange(FMaterialInfo MaterialInfo);
 
-	virtual void HighLightBorder() override;
-	virtual void UnHighLightBorder() override;
+    UFUNCTION()
+    void OnDimensionsChange(float X);
 
-	UFUNCTION()
+private:
+    UPROPERTY(EditAnywhere)
+    FVector Dimensions;
 
-	void SetMaterial(FMaterialInfo MaterialInfo);
+    UPROPERTY()
+    UProceduralMeshComponent* ProcMesh;
 
-	UFUNCTION()
-	void UpdateDimensions(float X);
-
-	virtual void BeginPlay() override;
-
+    UPROPERTY()
+    UMaterialInterface* Material;
 };

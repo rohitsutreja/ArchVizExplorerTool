@@ -7,6 +7,7 @@
 #include "ArchVizController.generated.h"
 
 
+class FUniqueIdGenerator;
 class UArchVizManager;
 class URoadConstructionManager;
 class UHouseConstructionManager;
@@ -39,6 +40,7 @@ public:
 	AArchVizController();
 
 	virtual void Tick(float DeltaSeconds) override;
+
 
 	UPROPERTY()
 	EMode CurrentMode = EMode::RoadConstruction;
@@ -102,7 +104,9 @@ public:
 	void InitInteriorDesignMode();
 
 	UFUNCTION()
-	void InitMaterialChangeMode();
+	void SaveGame();
+
+	void LoadGame();
 
 
 	AActor* GetActorUnderCursor(const TArray<AActor*>& IgnoredActors = {});

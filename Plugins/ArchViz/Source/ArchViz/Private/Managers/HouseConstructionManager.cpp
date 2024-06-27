@@ -14,7 +14,8 @@
 
 void UHouseConstructionManager::Start()
 {
-	
+	Controller->Notify(TEXT("House Construction Mode Started."));
+
 	if (IsValid(HouseConstructionUI))
 	{
 		HouseConstructionUI->AddToViewport(0);
@@ -32,6 +33,8 @@ void UHouseConstructionManager::SetUp()
 		HouseConstructionUI->WallButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectWall);
 		HouseConstructionUI->FloorButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectFloor);
 		HouseConstructionUI->DoorButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectDoor);
+		HouseConstructionUI->WindowButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectWindow);
+
 	}
 }
 
@@ -72,7 +75,7 @@ void UHouseConstructionManager::CreateAndSelectWall()
 
 	SelectedActor->HighLightBorder();
 
-	Controller->Notify(TEXT("Wall Created"));
+	Controller->Notify(TEXT("Wall Created. Click to Place on Desired Location."));
 
 	bIsMovingWithCursor = true;
 }
@@ -95,6 +98,9 @@ void UHouseConstructionManager::CreateAndSelectFloor() {
 		FRotator{ 0, 0, 0 },
 		SpawnParams);
 
+	Controller->Notify(TEXT("Floor Created. Click to Place on Desired Location."));
+
+
 	SelectedActor->HighLightBorder();
 
 	StartActorPlacement();
@@ -115,6 +121,31 @@ void UHouseConstructionManager::CreateAndSelectDoor()
 	SelectedActor = GetWorld()->SpawnActor<AHouseComponent>(DoorClass, FVector{ 0, 0, 0 },
 		FRotator{ 0, 0, 0 },
 		SpawnParams);
+
+	Controller->Notify(TEXT("Door Created. Click on Wall to Place it."));
+
+	SelectedActor->HighLightBorder();
+
+	StartActorPlacement();
+}
+
+void UHouseConstructionManager::CreateAndSelectWindow()
+{
+	if (IsCurrentActorMoving())
+	{
+		DestroySelectedActor();
+	}
+
+	DeselectCurrentActor();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	SelectedActor = GetWorld()->SpawnActor<AHouseComponent>(WindowClass, FVector{ 0, 0, 0 },
+		FRotator{ 0, 0, 0 },
+		SpawnParams);
+
+	Controller->Notify(TEXT("Window Created. Click on Wall to Place it."));
 
 	SelectedActor->HighLightBorder();
 
@@ -166,30 +197,54 @@ void UHouseConstructionManager::StartActorPlacement()
 	{
 
 		SelectedActor->HidePropertyPanel();
+
 		if (auto Door = Cast<ADoorActor>(SelectedActor))
 		{
 			Door->DetachFromWall();
+			Door->ParentWallComponentIndex = -1;
 		}
 
+
+		if (auto Window = Cast<AWindowActor>(SelectedActor))
+		{
+			Window->DetachFromWall();
+			Window->ParentWallComponentIndex = -1;
+		}
 		bIsMovingWithCursor = true;
 	}
 };
 
 void UHouseConstructionManager::EndActorPlacement()
 {
-	if (SelectedActor->IsA(ADoorActor::StaticClass()))
+	if (SelectedActor->IsA(ADoorActor::StaticClass()) || SelectedActor->IsA(AWindowActor::StaticClass()))
 	{
 		auto HitComponent = Controller->GetComponentUnderCursor({ SelectedActor });
 		auto HitActor = HitComponent->GetAttachParentActor();
 
 		if (auto Wall = Cast<AWallActor>(HitActor))
 		{
-			Wall->AttachDoorToComponent(Cast<UStaticMeshComponent>(HitComponent), Cast<ADoorActor>(SelectedActor));
+			if(auto Door = Cast<ADoorActor>(SelectedActor))
+			{
+				if(!Wall->AttachDoorToComponent(Cast<UStaticMeshComponent>(HitComponent), Door))
+				{
+					Controller->Notify(TEXT("There is already Window/Door Present at This Location."));
+					return;
+
+				};
+			}
+			else if(auto Window = Cast<AWindowActor>(SelectedActor))
+			{
+				if(!Wall->AttachWindowToComponent(Cast<UStaticMeshComponent>(HitComponent), Window))
+				{
+					Controller->Notify(TEXT("There is already Window/Door Present at This Location."));
+					return;
+				};
+			}
 			Wall->UnHighLightBorder();
 		}
 		else
 		{
-			Controller->Notify(TEXT("Door can only be placed on wall"));
+			Controller->Notify(TEXT("Doors and Windows Can Only be Placed on Wall"));
 			return;
 		}
 	}

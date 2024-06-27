@@ -25,7 +25,7 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UButton* HouseButton;
 	UPROPERTY(meta = (BindWidget))
-	UButton* MaterialButton;
+	UButton* SaveButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* InteriorButton;
 
@@ -34,7 +34,7 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UBorder* HouseButtonBorder;
 	UPROPERTY(meta = (BindWidget))
-	UBorder* MaterialButtonBorder;
+	UBorder* SaveButtonBorder;
 	UPROPERTY(meta = (BindWidget))
 	UBorder* InteriorButtonBorder;
 

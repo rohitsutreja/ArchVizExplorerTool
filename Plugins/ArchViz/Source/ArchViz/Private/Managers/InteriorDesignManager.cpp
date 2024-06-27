@@ -33,7 +33,7 @@ bool UInteriorDesignManager::IsPlacementValid(AInteriorActor* Actor)
 	{
 		if (auto HitActor = HitResult.GetActor(); IsValid(HitActor))
 		{
-			switch (Actor->Category)
+			switch (Actor->GetCategory())
 			{
 			case EItemCategory::FloorPlaceable:
 			{
@@ -73,7 +73,7 @@ bool UInteriorDesignManager::IsPlacementValid(AInteriorActor* Actor)
 			{
 				if (auto Table = Cast<AInteriorActor>(HitActor))
 				{
-					if (Table->Category == EItemCategory::Table)
+					if (Table->GetCategory() == EItemCategory::Table)
 					{
 						return true;
 					}
@@ -81,12 +81,14 @@ bool UInteriorDesignManager::IsPlacementValid(AInteriorActor* Actor)
 				Controller->Notify(TEXT("This item can be placed on Table only."));
 				break;
 			}
-
 			case EItemCategory::Table:
 			{
 				if (HitActor->IsA(AFloorActor::StaticClass()))
 				{
-					return true;
+					if (HitResult.ImpactNormal.Z > 0)
+					{
+						return true;
+					}
 				}
 				Controller->Notify(TEXT("This item can be placed on floor only."));
 
@@ -116,7 +118,8 @@ void UInteriorDesignManager::End()
 
 void UInteriorDesignManager::Start()
 {
-	
+	Controller->Notify(TEXT("Interior Design Mode Started."));
+
 	if (IsValid(InteriorDesignUI))
 	{
 		InteriorDesignUI->AddToViewport(0);
@@ -155,7 +158,7 @@ void UInteriorDesignManager::OnMeshItemClicked(FItemInfo ItemInfo)
 	CreateAndSelectActor(ItemInfo.StaticMesh);
 	if(IsValid(SelectedActor))
 	{
-	SelectedActor->Category = ItemInfo.Category;
+	SelectedActor->SetCategory(ItemInfo.Category);
 	}
 }
 

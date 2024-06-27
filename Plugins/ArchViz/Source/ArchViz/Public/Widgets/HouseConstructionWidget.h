@@ -30,6 +30,9 @@ public:
 	UButton* DoorButton;
 
 
+	UPROPERTY(meta = (BindWidget))
+	UButton* WindowButton;
+
 
 
 	virtual void NativeConstruct() override;

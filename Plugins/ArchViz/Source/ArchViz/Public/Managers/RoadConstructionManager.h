@@ -43,6 +43,8 @@ public:
 	virtual void SetUp() override;
 	virtual void End() override;
 
+	bool SelectRoadUnderCursor();
+
 	void OnLeftClick();
-	void SelectRoadUnderCursor();
+	void OnUKeyDown();
 };

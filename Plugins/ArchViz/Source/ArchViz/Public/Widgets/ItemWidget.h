@@ -36,6 +36,7 @@ protected:
 
     FItemInfo ItemInfo;
 
+
 	void SetMaterialInfo(const FItemInfo& Info);
     virtual void NativeConstruct() override;
 

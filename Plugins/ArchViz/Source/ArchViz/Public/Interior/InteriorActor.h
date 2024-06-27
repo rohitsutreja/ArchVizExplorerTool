@@ -6,45 +6,47 @@
 #include "ArchActor.h"
 #include "InteriorActor.generated.h"
 
-/**
- * 
- */
-
-
 UENUM(BlueprintType)
-enum class EItemCategory
+enum class EItemCategory : uint8
 {
-	WallPlaceable,
-	FloorPlaceable,
-	CeilingPlaceable,
-	Table,
-	TablePlaceable
+    WallPlaceable,
+    FloorPlaceable,
+    CeilingPlaceable,
+    Table,
+    TablePlaceable
 };
 
 UCLASS()
 class ARCHVIZ_API AInteriorActor : public AArchActor
 {
-	GENERATED_BODY()
-
+    GENERATED_BODY()
 
 public:
-	UPROPERTY()
-	UStaticMeshComponent* StaticMeshComponent;
+    AInteriorActor();
 
-	UPROPERTY()
-	UStaticMesh* CurrentStaticMesh;
+    // Getters
+    UStaticMeshComponent* GetStaticMeshComponent() const;
+    UStaticMesh* GetCurrentStaticMesh() const;
+    EItemCategory GetCategory() const;
 
-	UPROPERTY()
-	EItemCategory Category;
+    // Setters
+    void SetStaticMesh(UStaticMesh* InStaticMesh);
+    void SetCategory(EItemCategory InCategory);
 
-	AInteriorActor();
+    virtual void HighLightBorder() override;
+    virtual void UnHighLightBorder() override;
+    virtual void BeginPlay() override;
 
-	virtual void HighLightBorder() override;
-	virtual void UnHighLightBorder() override;
+    void SnapActorToGrid(const FVector& GridSize);
+    void Rotate();
 
-	virtual void BeginPlay() override;
+protected:
+    UPROPERTY()
+    UStaticMeshComponent* StaticMeshComponent;
 
-	void SetStaticMesh(UStaticMesh* StaticMesh);
-	void SnapActorToGrid(const FVector& GridSize);
-	void Rotate();
+    UPROPERTY()
+    UStaticMesh* CurrentStaticMesh;
+
+    UPROPERTY()
+    EItemCategory Category;
 };

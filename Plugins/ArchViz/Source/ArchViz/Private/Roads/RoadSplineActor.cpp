@@ -11,6 +11,7 @@
 #include "Components/TextBlock.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Managers/RoadConstructionManager.h"
+#include "Widgets/PropertyPanelWidget.h"
 #include "Widgets/RoadConstructionWidget.h"
 #include "Widgets/ScrollableListWidget.h"
 
@@ -50,6 +51,17 @@ void ARoadSplineActor::AddSplinePoint(const FVector& Location)
 	SplinePoints.Add(Location);
 }
 
+bool ARoadSplineActor::RemoveLastSplinePoint()
+{
+	if (!SplinePoints.IsEmpty())
+	{
+		SplinePoints.RemoveAt(SplinePoints.Num() - 1);
+		return true;
+	}
+	return false;
+	
+}
+
 
 void ARoadSplineActor::UpdateRoad()
 {
@@ -62,7 +74,7 @@ void ARoadSplineActor::UpdateRoad()
 	Spline->SetSplinePoints(SplinePoints, ESplineCoordinateSpace::World);
 
 	const int32 NumPoints = Spline->GetNumberOfSplinePoints();
-	const FVector MeshBounds = SplineMesh->GetBounds().BoxExtent * 2.0f;
+	const FVector MeshBounds = SourceStaticMesh->GetBounds().BoxExtent * 2.0f;
 	const float MeshWidth = MeshBounds.Y;
 	const float MeshLength = MeshBounds.X;
 	const float ScaleFactor = Width / MeshWidth;
@@ -91,7 +103,7 @@ void ARoadSplineActor::UpdateRoad()
 				USplineMeshComponent* SplineMeshComponent = NewObject<USplineMeshComponent>(this);
 				SplineMeshComponent->SetMobility(EComponentMobility::Movable);
 				SplineMeshComponent->AttachToComponent(Spline, FAttachmentTransformRules::KeepRelativeTransform);
-				SplineMeshComponent->SetStaticMesh(SplineMesh);
+				SplineMeshComponent->SetStaticMesh(SourceStaticMesh);
 				SplineMeshComponent->RegisterComponent();
 
 				SplineMeshComponent->SetRenderCustomDepth(true);
@@ -134,11 +146,32 @@ void ARoadSplineActor::UpdateRoad()
 	}
 }
 
+void ARoadSplineActor::SynchronizePropertyPanel()
+{
+	if(IsValid(PropertyPanelUI))
+	{
+		if(TypeOfRoad == ERoadType::Sharp)
+		{
+			PropertyPanelUI->RoadType->SetSelectedOption(TEXT("Sharp"));
+		}
+		else
+		{
+			PropertyPanelUI->RoadType->SetSelectedOption(TEXT("Curved"));
+		}
+
+		PropertyPanelUI->RoadWidthValue->SetValue(Width);
+	}
+}
+
 void ARoadSplineActor::OnWidthChanged(float InValue)
 {
-	Width = InValue;
 
-	UpdateRoad();
+	if(Width!= InValue)
+	{
+		Width = InValue;
+		UpdateRoad();
+	}
+
 }
 
 void ARoadSplineActor::OnRoadTypeChanged(FString SelectedItem, ESelectInfo::Type SelectionType)
@@ -169,12 +202,7 @@ void ARoadSplineActor::BeginPlay()
 
 		PropertyPanelUI->RoadType->OnSelectionChanged.AddDynamic(this, &ARoadSplineActor::OnRoadTypeChanged);
 
-		PropertyPanelUI->RoadMaterialList->OnMaterialChange.AddDynamic(this, &ARoadSplineActor::SetMaterial);
-
-
-
-
-
+		PropertyPanelUI->RoadMaterialList->OnMaterialChange.AddDynamic(this, &ARoadSplineActor::OnMaterialChange);
 	}
 }
 
@@ -212,11 +240,61 @@ void ARoadSplineActor::UnHighLightBorder()
 	}
 }
 
-void ARoadSplineActor::SetMaterial(FMaterialInfo MaterialInfo)
+void ARoadSplineActor::OnMaterialChange(FMaterialInfo MaterialInfo)
 {
-	Material = MaterialInfo.Material;
+	SetMaterial(MaterialInfo.Material);
 	UpdateRoad();
 }
 
+
+UStaticMesh* ARoadSplineActor::GetSourceStaticMesh() const
+{
+	return SourceStaticMesh;
+}
+
+const TArray<FVector>& ARoadSplineActor::GetSplinePoints() const
+{
+	return SplinePoints;
+}
+
+UMaterialInterface* ARoadSplineActor::GetMaterial() const
+{
+	return Material;
+}
+
+float ARoadSplineActor::GetWidth() const
+{
+	return Width;
+}
+
+ERoadType ARoadSplineActor::GetTypeOfRoad() const
+{
+	return TypeOfRoad;
+}
+
+void ARoadSplineActor::SetSourceSplineMesh(UStaticMesh* InSplineMesh)
+{
+	SourceStaticMesh = InSplineMesh;
+}
+
+void ARoadSplineActor::SetSplinePoints(const TArray<FVector>& InSplinePoints)
+{
+	SplinePoints = InSplinePoints;
+}
+
+void ARoadSplineActor::SetMaterial(UMaterialInterface* InMaterial)
+{
+	Material = InMaterial;
+}
+
+void ARoadSplineActor::SetWidth(float InWidth)
+{
+	Width = InWidth;
+}
+
+void ARoadSplineActor::SetTypeOfRoad(ERoadType InTypeOfRoad)
+{
+	TypeOfRoad = InTypeOfRoad;
+}
 
 
