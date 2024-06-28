@@ -126,7 +126,6 @@ void ADoorActor::DetachFromWall()
             if (auto Wall = Cast<AWallActor>(ParentActor))
             {
                 Wall->DetachDoorFromComponent(Cast<UStaticMeshComponent>(ParentComp));
-                ParentWallComponentIndex = -1;
             }
         }
     }

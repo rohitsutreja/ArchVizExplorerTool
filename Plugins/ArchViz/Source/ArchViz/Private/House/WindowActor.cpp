@@ -64,8 +64,12 @@ void AWindowActor::DetachFromWall()
             if (auto Wall = Cast<AWallActor>(ParentActor))
             {
                 Wall->DetachWindowFromComponent(Cast<UStaticMeshComponent>(ParentComp));
-                ParentWallComponentIndex = -1;
             }
         }
     }
+}
+
+UMaterialInterface* AWindowActor::GetMaterial()
+{
+    return Material;
 }

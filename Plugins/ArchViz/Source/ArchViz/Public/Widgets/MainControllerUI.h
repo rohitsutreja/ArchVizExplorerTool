@@ -28,6 +28,9 @@ public:
 	UButton* SaveButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* InteriorButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* MenuButton;
+
 
 	UPROPERTY(meta = (BindWidget))
 	UBorder* RoadButtonBorder;
@@ -37,6 +40,9 @@ public:
 	UBorder* SaveButtonBorder;
 	UPROPERTY(meta = (BindWidget))
 	UBorder* InteriorButtonBorder;
+	UPROPERTY(meta = (BindWidget))
+	UBorder* MenuButtonBorder;
+
 
 
 	UPROPERTY(meta =(BindWidget))

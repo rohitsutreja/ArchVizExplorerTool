@@ -37,7 +37,6 @@ void AHouseComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 		for (auto& ChildActor : ChildActors)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Inside"));
 			ChildActor->GetAttachParentActor()->Destroy();
 		}
 	}

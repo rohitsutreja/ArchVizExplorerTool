@@ -130,6 +130,26 @@ struct FDoor {
 
 
 
+USTRUCT()
+struct FWindow {
+	GENERATED_BODY()
+
+	UPROPERTY()
+	int32 ID;
+
+	UPROPERTY()
+	FTransform Transform;
+
+	UPROPERTY()
+	UMaterialInterface* WindowMaterial;
+
+	UPROPERTY()
+	int32 ParentActorId;
+
+	UPROPERTY()
+	int32 ParentComponentIndex;
+};
+
 UCLASS()
 class ARCHVIZ_API UArchVizSave : public USaveGame
 {
@@ -152,5 +172,9 @@ class ARCHVIZ_API UArchVizSave : public USaveGame
 	UPROPERTY()
 	TArray<FDoor> DoorActorArray;
 
-	
+	UPROPERTY()
+	TArray<FWindow> WindowActorArray;
+
+	UPROPERTY()
+	TArray<FString> SaveMetaDataArray;
 };

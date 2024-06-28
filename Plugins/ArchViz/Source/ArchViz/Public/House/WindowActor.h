@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "House/HouseComponent.h"
+#include "SaveAndLoad/ArchVizSave.h"
 #include "WindowActor.generated.h"
 
 /**
@@ -24,6 +25,7 @@ public:
 	virtual void UnHighLightBorder() override;
 
 	void DetachFromWall();
+	UMaterialInterface* GetMaterial();
 
 	int32 ParentWallComponentIndex;
 
@@ -33,5 +35,8 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UStaticMesh* WindowMesh;
+
+	UPROPERTY()
+	UMaterialInterface* Material;
 
 };

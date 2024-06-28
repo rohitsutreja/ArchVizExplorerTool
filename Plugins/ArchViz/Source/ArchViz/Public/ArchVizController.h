@@ -11,6 +11,7 @@ class FUniqueIdGenerator;
 class UArchVizManager;
 class URoadConstructionManager;
 class UHouseConstructionManager;
+class USaveAndLoadManager;
 class UInteriorDesignManager;
 class URoadConstructionWidget;
 class UHouseConstructionWidget;
@@ -26,7 +27,8 @@ enum class EMode : uint8
 	RoadConstruction,
 	HouseConstruction,
 	InteriorDesign,
-	MaterialChanger
+	SaveMode,
+	LoadMode
 };
 
 
@@ -77,10 +79,22 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UInteriorDesignManager> InteriorDesignManagerClass;
 
+	UPROPERTY()
+	USaveAndLoadManager* SaveAndLoadManager;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<USaveAndLoadManager> SaveAndLoadManagerClass;
 
 	UPROPERTY()
 	UArchVizManager* CurrentManager;
+
+
+	UFUNCTION()
+	void InitSaveMode();
+
+
+	UFUNCTION()
+	void InitLoadMode();
 
 
 	virtual void BeginPlay() override;
@@ -102,12 +116,6 @@ public:
 
 	UFUNCTION()
 	void InitInteriorDesignMode();
-
-	UFUNCTION()
-	void SaveGame();
-
-	void LoadGame();
-
 
 	AActor* GetActorUnderCursor(const TArray<AActor*>& IgnoredActors = {});
 	UPrimitiveComponent* GetComponentUnderCursor(const TArray<AActor*>& IgnoredActors = {});

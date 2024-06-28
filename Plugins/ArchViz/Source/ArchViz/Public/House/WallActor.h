@@ -29,16 +29,20 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     void UpdateWall();
+    void AttachActorToWallSegment(AActor* Actor, UStaticMeshComponent* WallSegment, const FName& SocketName);
 
     bool AttachDoorToComponent(UStaticMeshComponent* Component, ADoorActor* Door);
     void DetachDoorFromComponent(UStaticMeshComponent* Component);
-    void RemoveAllDoorsFromWall();
+    void DestroyAllDoorsFromWall();
+
     void AddDoorAtIndex(int32 Idx, ADoorActor* Door);
+    void AttachWindowAtIndex(int32 Idx, AWindowActor* Window);
+
 
 
     bool AttachWindowToComponent(UStaticMeshComponent* Component, AWindowActor* Door);
     void DetachWindowFromComponent(UStaticMeshComponent* Component);
-    void RemoveAllWindowsFromWall();
+    void DestroyAllWindowsFromWall();
     void AddWindowAtIndex(int32 Idx, AWindowActor* Door);
 
     void SetMaterial(UMaterialInterface* InMaterial);
