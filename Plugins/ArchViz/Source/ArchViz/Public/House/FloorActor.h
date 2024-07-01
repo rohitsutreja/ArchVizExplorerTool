@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "House/HouseComponent.h"
 #include "ProceduralMeshComponent.h"
+#include "DataAssets/MaterialDataAsset.h"
+#include "SaveAndLoad/ArchVizSave.h"
 #include "FloorActor.generated.h"
 
 /**
@@ -20,6 +22,8 @@ public:
 
     // Overrides
     virtual void OnConstruction(const FTransform& Transform) override;
+
+
     virtual void BeginPlay() override;
 
     // Methods
@@ -32,15 +36,21 @@ public:
 
     // Getters
     const FVector& GetDimensions() const;
-    UMaterialInterface* GetMaterial() const;
+    UMaterialInterface* GetBottomMaterial() const;
+    UMaterialInterface* GetTopMaterial() const;
+
 
     // Setters
     void SetDimensions(const FVector& InDimensions);
-    void SetMaterial(UMaterialInterface* InMaterial);
+    void SetBottomMaterial(UMaterialInterface* InMaterial);
+    void SetTopMaterial(UMaterialInterface* InMaterial);
 
     //UFUNCTIONs
     UFUNCTION()
-    void OnMaterialChange(FMaterialInfo MaterialInfo);
+    void OnFloorMaterialChange(FMaterialInfo MaterialInfo);
+
+    UFUNCTION()
+    void OnCeilingMaterialChange(FMaterialInfo MaterialInfo);
 
     UFUNCTION()
     void OnDimensionsChange(float X);
@@ -52,6 +62,16 @@ private:
     UPROPERTY()
     UProceduralMeshComponent* ProcMesh;
 
+    UPROPERTY(EditAnywhere)
+    UMaterialInterface* BottomMaterial;
+
+
+    UPROPERTY(EditAnywhere)
+    UMaterialInterface* TopMaterial;
+
     UPROPERTY()
-    UMaterialInterface* Material;
+    UMaterialInstanceDynamic* DynBottomMaterial;
+
+    UPROPERTY()
+    UMaterialInstanceDynamic* DynTopMaterial;
 };

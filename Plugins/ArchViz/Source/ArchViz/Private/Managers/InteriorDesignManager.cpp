@@ -5,6 +5,7 @@
 
 #include "ArchVizController.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Border.h"
 #include "House/FloorActor.h"
 #include "House/WallActor.h"
 #include "Interior/InteriorActor.h"
@@ -94,6 +95,11 @@ bool UInteriorDesignManager::IsPlacementValid(AInteriorActor* Actor)
 
 				break;
 			}
+			case EItemCategory::Anywhere:
+				{
+				return true;
+				break;
+				}
 			}
 		}
 	}
@@ -112,6 +118,7 @@ void UInteriorDesignManager::End()
 
 	if (IsValid(InteriorDesignUI))
 	{
+		InteriorDesignUI->MeshItemListBorder->SetVisibility(ESlateVisibility::Collapsed);
 		InteriorDesignUI->RemoveFromParent();
 	}
 }

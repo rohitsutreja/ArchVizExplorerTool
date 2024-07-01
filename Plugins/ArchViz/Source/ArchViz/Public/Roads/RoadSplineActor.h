@@ -84,7 +84,7 @@ protected:
     UPROPERTY()
     TArray<USplineMeshComponent*> SplineMeshComponents;
 
-    UPROPERTY()
+    UPROPERTY(EditDefaultsOnly)
     UMaterialInterface* Material;
 
     UPROPERTY()

@@ -6,7 +6,6 @@
 #include "GameFramework/PlayerController.h"
 #include "ArchVizController.generated.h"
 
-
 class FUniqueIdGenerator;
 class UArchVizManager;
 class URoadConstructionManager;
@@ -20,120 +19,127 @@ class AWallActor;
 class AFloorActor;
 class UInputMappingContext;
 
-
 UENUM(BlueprintType)
 enum class EMode : uint8
 {
-	RoadConstruction,
-	HouseConstruction,
-	InteriorDesign,
-	SaveMode,
-	LoadMode
+    RoadConstruction,
+    HouseConstruction,
+    InteriorDesign,
+    SaveMode,
+    LoadMode
 };
-
 
 UCLASS()
 class ARCHVIZ_API AArchVizController : public APlayerController
 {
-	GENERATED_BODY()
-
+    GENERATED_BODY()
 
 public:
-	AArchVizController();
+    AArchVizController();
 
-	virtual void Tick(float DeltaSeconds) override;
+    virtual void Tick(float DeltaSeconds) override;
 
-
-	UPROPERTY()
-	EMode CurrentMode = EMode::RoadConstruction;
-
-	UPROPERTY(BlueprintReadWrite)
-	UMainControllerUI* MainUI;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UMainControllerUI> MainUIClass;
+    virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    void InitializeAndSetUpManagers();
 
 
-	UPROPERTY()
-	UHouseConstructionWidget* HouseConstructionUI;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UHouseConstructionWidget> HouseConstructionUIClass;
+    UFUNCTION()
+    void InitSaveMode();
 
+    UFUNCTION()
+    void InitLoadMode();
 
-	UPROPERTY()
-	URoadConstructionManager* RoadConstructionManager;
+    UFUNCTION()
+    void InitRoadConstructionMode();
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<URoadConstructionManager> RoadConstructionManagerClass;
+    UFUNCTION()
+    void InitHouseConstructionMode();
 
-	UPROPERTY()
-	UHouseConstructionManager* HouseConstructionManager;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UHouseConstructionManager> HouseConstructionManagerClass;
-
-	UPROPERTY()
-	UInteriorDesignManager* InteriorDesignManager;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UInteriorDesignManager> InteriorDesignManagerClass;
-
-	UPROPERTY()
-	USaveAndLoadManager* SaveAndLoadManager;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<USaveAndLoadManager> SaveAndLoadManagerClass;
-
-	UPROPERTY()
-	UArchVizManager* CurrentManager;
+    UFUNCTION()
+    void InitInteriorDesignMode();
 
 
-	UFUNCTION()
-	void InitSaveMode();
+
+    void CleanUp() const;
+    void ClearAllInputMappings() const;
+
+    void SetUpInputForRoadConstructionMode();
+    void SetUpInputForHouseConstructionMode();
+    void SetUpInputForInteriorDesignMode();
 
 
-	UFUNCTION()
-	void InitLoadMode();
+    static FSlateBrush GetBrushWithTint(const FLinearColor& Color);
+
+    AActor* GetActorUnderCursor(const TArray<AActor*>& IgnoredActors = {}) const;
+    UPrimitiveComponent* GetComponentUnderCursor(const TArray<AActor*>& IgnoredActors = {}) const;
+    FHitResult GetHitResult(const TArray<AActor*>& IgnoredActors = {}) const;
 
 
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-	FSlateBrush GetBrushWithTint(const FLinearColor& Color);
-
-	void CleanUp();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void Notify(const FString& Message);
+    UFUNCTION(BlueprintImplementableEvent)
+    void Notify(const FString& Message);
 
 
-	UFUNCTION()
-	void InitRoadConstructionMode();
+    EMode GetCurrentMode() const;
+    UMainControllerUI* GetMainUI() const;
 
-	UFUNCTION()
-	void InitHouseConstructionMode();
-
-	UFUNCTION()
-	void InitInteriorDesignMode();
-
-	AActor* GetActorUnderCursor(const TArray<AActor*>& IgnoredActors = {});
-	UPrimitiveComponent* GetComponentUnderCursor(const TArray<AActor*>& IgnoredActors = {});
-	FHitResult GetHitResult(const TArray<AActor*>& IgnoredActors = {}) const;
+protected:
+    UPROPERTY()
+    EMode CurrentMode = EMode::RoadConstruction;
 
 
-	void SetUpInputForRoadConstructionMode();
-	void SetUpInputForHouseConstructionMode();
-	void SetUpInputForInteriorDesignMode();
+    UPROPERTY(BlueprintReadWrite)
+    UMainControllerUI* MainUI;
+
+    UPROPERTY(EditDefaultsOnly)
+    TSubclassOf<UMainControllerUI> MainUIClass;
 
 
-	UPROPERTY()
-	UInputMappingContext* RoadConstructionMapping;
+    UPROPERTY()
+    UHouseConstructionWidget* HouseConstructionUI;
 
-	UPROPERTY()
-	UInputMappingContext* HouseConstructionMapping;
+    UPROPERTY(EditDefaultsOnly)
+    TSubclassOf<UHouseConstructionWidget> HouseConstructionUIClass;
 
-	UPROPERTY()
-	UInputMappingContext* InteriorDesignMapping;
 
+    UPROPERTY()
+    URoadConstructionManager* RoadConstructionManager;
+
+    UPROPERTY(EditDefaultsOnly)
+    TSubclassOf<URoadConstructionManager> RoadConstructionManagerClass;
+
+
+    UPROPERTY()
+    UHouseConstructionManager* HouseConstructionManager;
+
+    UPROPERTY(EditDefaultsOnly)
+    TSubclassOf<UHouseConstructionManager> HouseConstructionManagerClass;
+
+
+    UPROPERTY()
+    UInteriorDesignManager* InteriorDesignManager;
+
+    UPROPERTY(EditDefaultsOnly)
+    TSubclassOf<UInteriorDesignManager> InteriorDesignManagerClass;
+
+
+    UPROPERTY()
+    USaveAndLoadManager* SaveAndLoadManager;
+
+    UPROPERTY(EditDefaultsOnly)
+    TSubclassOf<USaveAndLoadManager> SaveAndLoadManagerClass;
+
+
+    UPROPERTY()
+    UArchVizManager* CurrentManager;
+
+    UPROPERTY()
+    UInputMappingContext* RoadConstructionMapping;
+
+    UPROPERTY()
+    UInputMappingContext* HouseConstructionMapping;
+
+    UPROPERTY()
+    UInputMappingContext* InteriorDesignMapping;
 };

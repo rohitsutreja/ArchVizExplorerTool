@@ -15,5 +15,4 @@ void UMainControllerUI::ShowNotification(const FString& Message)
 void UMainControllerUI::HideNotification()
 {
 	NotificationPanel->SetVisibility(ESlateVisibility::Collapsed);
-
 }

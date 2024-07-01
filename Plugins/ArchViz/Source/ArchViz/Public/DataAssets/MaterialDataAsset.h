@@ -42,4 +42,10 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TArray<FMaterialInfo> ArrayOfDoorMaterials;
+
+	UPROPERTY(EditAnywhere)
+	TArray<FMaterialInfo> ArrayOFDoorFrameMaterials;
+
+	UPROPERTY(EditAnywhere)
+	TArray<FMaterialInfo> ArrayOFCeilingMaterials;
 };

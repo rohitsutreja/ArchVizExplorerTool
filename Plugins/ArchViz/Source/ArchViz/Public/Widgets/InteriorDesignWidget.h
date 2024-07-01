@@ -34,8 +34,9 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UButton* LightButton;
 
-
-
+	UPROPERTY(meta = (BindWidget))
+	UButton* StairButton;
+	
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()
@@ -50,6 +51,8 @@ public:
 	void OnLightButtonClicked();
 	UFUNCTION()
 	void OnCeilingLightButtonClicked();
+	UFUNCTION()
+	void OnStairButtonClicked();
 
 	UPROPERTY(meta = (BindWidget))
 	UItemsList* MeshItemsScrollList;
@@ -74,4 +77,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	UItemDataAsset* PictureMeshList;
+
+	UPROPERTY(EditAnywhere)
+	UItemDataAsset* StairMeshList;
 };

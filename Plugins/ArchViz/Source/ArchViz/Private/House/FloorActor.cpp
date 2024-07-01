@@ -110,12 +110,82 @@ void AFloorActor::GenerateFloor()
         UVs.Add(FVector2D(-1, 1));
     }
 
-    ProcMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
-    if (IsValid(Material))
+
+
+    // Create the top plane section
+    TArray<FVector> PlaneVertices;
+    TArray<int32> PlaneTriangles;
+    TArray<FVector> PlaneNormals;
+    TArray<FVector2D> PlaneUVs;
+
+    // Top Plane Vertices (same as top face of the cube)
+    PlaneVertices.Add(FVector(0, Dimensions.Y, Dimensions.Z + 1));
+    PlaneVertices.Add(FVector(0, 0, Dimensions.Z + 1));
+    PlaneVertices.Add(FVector(Dimensions.X, 0, Dimensions.Z + 1));
+    PlaneVertices.Add(FVector(Dimensions.X, Dimensions.Y, Dimensions.Z +1));
+
+    // Top Plane Triangles
+    PlaneTriangles.Append({ 0, 2,1 , 0, 3,2});
+
+    // Top Plane Normals (pointing up)
+    for (int32 i = 0; i < 4; i++)
     {
-        ProcMesh->SetMaterial(0, Material);
+        PlaneNormals.Add(FVector(0, 0, 1));
     }
+
+    // UV Mapping for the top plane
+    PlaneUVs.Add(FVector2D(0, 1));
+    PlaneUVs.Add(FVector2D(0, 0));
+    PlaneUVs.Add(FVector2D(1, 0));
+    PlaneUVs.Add(FVector2D(1, 1));
+
+
+    ProcMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
+
+
+    if (IsValid(BottomMaterial))
+    {
+        if (!IsValid(DynBottomMaterial))
+        {
+            DynBottomMaterial = UMaterialInstanceDynamic::Create(BottomMaterial, this);
+        }
+
+        if (DynBottomMaterial)
+        {
+            DynBottomMaterial->SetVectorParameterValue(FName("Tiling/Offset"), FLinearColor(Dimensions.X / 400.0f, Dimensions.Y / 400.0f, 0, 0));
+            ProcMesh->SetMaterial(0, DynBottomMaterial);
+
+        }
+    }
+
+
+    ProcMesh->CreateMeshSection_LinearColor(1, PlaneVertices, PlaneTriangles, PlaneNormals, PlaneUVs, VertexColors, Tangents, true);
+
+
+
+    if (IsValid(TopMaterial))
+    {
+        if (!IsValid(DynTopMaterial))
+        {
+            DynTopMaterial = UMaterialInstanceDynamic::Create(TopMaterial, this);
+        }
+
+        if (DynTopMaterial)
+        {
+            DynTopMaterial->SetVectorParameterValue(FName("Tiling/Offset"), FLinearColor(Dimensions.X / 400.0f, Dimensions.Y / 400.0f, 0, 0));
+            ProcMesh->SetMaterial(1, DynTopMaterial);
+
+        }
+    }
+
 }
+
+
+
+  
+  
+
+
 
 void AFloorActor::OnConstruction(const FTransform& Transform)
 {
@@ -138,7 +208,9 @@ void AFloorActor::BeginPlay()
         PropertyPanelUI->FloorWidth->OnValueChanged.AddDynamic(this, &AFloorActor::OnDimensionsChange);
         PropertyPanelUI->FloorHeight->OnValueChanged.AddDynamic(this, &AFloorActor::OnDimensionsChange);
 
-        PropertyPanelUI->FloorMaterialList->OnMaterialChange.AddDynamic(this, &AFloorActor::OnMaterialChange);
+        PropertyPanelUI->FloorMaterialList->OnMaterialChange.AddDynamic(this, &AFloorActor::OnFloorMaterialChange);
+        PropertyPanelUI->CeilingMaterialList->OnMaterialChange.AddDynamic(this, &AFloorActor::OnCeilingMaterialChange);
+
     }
 }
 
@@ -163,10 +235,15 @@ void AFloorActor::SynchronizePropertyPanel()
     }
 }
 
-void AFloorActor::OnMaterialChange(FMaterialInfo MaterialInfo)
+void AFloorActor::OnFloorMaterialChange(FMaterialInfo MaterialInfo)
 {
-    Material = MaterialInfo.Material;
+    SetTopMaterial(MaterialInfo.Material);
+    GenerateFloor();
+}
 
+void AFloorActor::OnCeilingMaterialChange(FMaterialInfo MaterialInfo)
+{
+    SetBottomMaterial(MaterialInfo.Material);
     GenerateFloor();
 }
 
@@ -187,9 +264,14 @@ const FVector& AFloorActor::GetDimensions() const
     return Dimensions;
 }
 
-UMaterialInterface* AFloorActor::GetMaterial() const
+UMaterialInterface* AFloorActor::GetBottomMaterial() const
 {
-    return Material;
+    return BottomMaterial;
+}
+
+UMaterialInterface* AFloorActor::GetTopMaterial() const
+{
+    return TopMaterial;
 }
 
 
@@ -200,8 +282,37 @@ void AFloorActor::SetDimensions(const FVector& InDimensions)
     Dimensions = InDimensions;
 }
 
-void AFloorActor::SetMaterial(UMaterialInterface* InMaterial)
+void AFloorActor::SetBottomMaterial(UMaterialInterface* InMaterial)
 {
-    Material = InMaterial;
-    ProcMesh->SetMaterial(0, InMaterial);
+    BottomMaterial = InMaterial;
+
+    if (IsValid(BottomMaterial))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("OK"));
+        DynBottomMaterial = UMaterialInstanceDynamic::Create(BottomMaterial, this);
+
+        if (DynBottomMaterial)
+        {
+            DynBottomMaterial->SetVectorParameterValue(FName("Tiling/Offset"), FLinearColor(Dimensions.X / 400.0f, Dimensions.Y / 400.0f, 0, 0));
+            ProcMesh->SetMaterial(0, DynBottomMaterial);
+        }
+    }
+
+
+}
+
+void AFloorActor::SetTopMaterial(UMaterialInterface* InMaterial)
+{
+    TopMaterial = InMaterial;
+
+    if (IsValid(TopMaterial))
+    {
+    	DynTopMaterial = UMaterialInstanceDynamic::Create(TopMaterial, this);
+        if (DynTopMaterial)
+        {
+            FVector2D TilingFactor = FVector2D(Dimensions.X / 400.0f, Dimensions.Y / 400.0f);
+            DynTopMaterial->SetVectorParameterValue(FName("Tiling/Offset"), FLinearColor(TilingFactor.X, TilingFactor.Y, 0, 0));
+            ProcMesh->SetMaterial(1, DynTopMaterial);
+        }
+    }
 }

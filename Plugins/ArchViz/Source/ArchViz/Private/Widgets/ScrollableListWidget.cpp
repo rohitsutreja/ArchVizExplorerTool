@@ -45,13 +45,22 @@ void UScrollableListWidget::PopulateMaterialList()
 		ArrayOfMaterials = MaterialDataAsset->ArrayOfFloorMaterials;
 	}
 	break;
-
-
 	case EArchItem::Door:
 	{
 		ArrayOfMaterials = MaterialDataAsset->ArrayOfDoorMaterials;
 	}
 	break;
+
+	case EArchItem::Ceiling:
+	{
+		ArrayOfMaterials = MaterialDataAsset->ArrayOFCeilingMaterials;
+	}
+		break;
+	case EArchItem::DoorFrame:
+	{
+		ArrayOfMaterials = MaterialDataAsset->ArrayOFDoorFrameMaterials;
+	}
+		break;
 	}
 
 	for (const FMaterialInfo& MaterialInfo : ArrayOfMaterials)

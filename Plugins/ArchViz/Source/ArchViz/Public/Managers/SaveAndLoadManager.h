@@ -50,7 +50,7 @@ public:
 	virtual void Start() override;
 	virtual void End() override;
 
-	void ShowLoadMenu();
+	void ShowLoadMenu() const;
 	void ShowSaveMenu();
 
 	void SaveSlotMetaData(const FString& SlotName);

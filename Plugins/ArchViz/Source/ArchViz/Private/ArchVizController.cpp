@@ -1,10 +1,9 @@
-
-#include  "ArchVizController.h"
+#include "ArchVizController.h"
 #include "EngineUtils.h"
-#include  "EnhancedInputComponent.h"
-#include  "EnhancedInputSubsystems.h"
-#include  "InputAction.h"
-#include  "InputMappingContext.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputAction.h"
+#include "InputMappingContext.h"
 #include "NetworkMessage.h"
 #include "Components/Border.h"
 #include "Components/Button.h"
@@ -20,372 +19,328 @@
 #include "Widgets/MainControllerUI.h"
 #include "Widgets/ScrollableListWidget.h"
 
-
-AArchVizController::AArchVizController() : MainUI(nullptr), HouseConstructionUI(nullptr),
-                                           RoadConstructionManager(nullptr),
-                                           HouseConstructionManager(nullptr),
-                                           CurrentManager(nullptr),
-                                           RoadConstructionMapping(nullptr),
-                                           HouseConstructionMapping(nullptr),
-                                           InteriorDesignMapping(nullptr)
+AArchVizController::AArchVizController()
+    : MainUI(nullptr), HouseConstructionUI(nullptr),
+    RoadConstructionManager(nullptr), HouseConstructionManager(nullptr),
+    InteriorDesignManager(nullptr), SaveAndLoadManager(nullptr),
+    CurrentManager(nullptr), RoadConstructionMapping(nullptr),
+    HouseConstructionMapping(nullptr), InteriorDesignMapping(nullptr)
 {
-	bShowMouseCursor = true;
+    bShowMouseCursor = true;
 }
 
 void AArchVizController::Tick(float DeltaSeconds)
 {
-	Super::Tick(DeltaSeconds);
+    Super::Tick(DeltaSeconds);
 
-	if (HouseConstructionManager->IsCurrentActorMoving())
-	{
-		HouseConstructionManager->UpdateActorPlacement();
-	}
+    if (HouseConstructionManager->IsCurrentActorMoving())
+    {
+        HouseConstructionManager->UpdateActorPlacement();
+    }
 
-	if(InteriorDesignManager->IsCurrentActorMoving())
-	{
-		InteriorDesignManager->UpdateActorPlacement();
-	}
+    if (InteriorDesignManager->IsCurrentActorMoving())
+    {
+        InteriorDesignManager->UpdateActorPlacement();
+    }
 }
-
-
 
 void AArchVizController::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
-	MainUI = CreateWidget<UMainControllerUI>(this, MainUIClass);
+    MainUI = CreateWidget<UMainControllerUI>(this, MainUIClass);
 
-	
-	RoadConstructionManager = NewObject<URoadConstructionManager>(this, RoadConstructionManagerClass);
-	HouseConstructionManager = NewObject<UHouseConstructionManager>(this, HouseConstructionManagerClass);
-	InteriorDesignManager = NewObject<UInteriorDesignManager>(this, InteriorDesignManagerClass);
-	SaveAndLoadManager = NewObject<USaveAndLoadManager>(this, SaveAndLoadManagerClass);
+    if (IsValid(MainUI))
+    {
+        MainUI->RoadButton->OnClicked.AddDynamic(this, &AArchVizController::InitRoadConstructionMode);
+        MainUI->HouseButton->OnClicked.AddDynamic(this, &AArchVizController::InitHouseConstructionMode);
+        MainUI->InteriorButton->OnClicked.AddDynamic(this, &AArchVizController::InitInteriorDesignMode);
+        MainUI->SaveButton->OnClicked.AddDynamic(this, &AArchVizController::InitSaveMode);
+        MainUI->MenuButton->OnClicked.AddDynamic(this, &AArchVizController::InitLoadMode);
 
+        MainUI->AddToViewport(1);
+    }
 
-	if (IsValid(MainUI))
-	{
-		MainUI->RoadButton->OnClicked.AddDynamic(this, &AArchVizController::InitRoadConstructionMode);
-		MainUI->HouseButton->OnClicked.AddDynamic(this, &AArchVizController::InitHouseConstructionMode);
-		MainUI->InteriorButton->OnClicked.AddDynamic(this, &AArchVizController::InitInteriorDesignMode);
-		MainUI->SaveButton->OnClicked.AddDynamic(this, &AArchVizController::InitSaveMode);
-		MainUI->MenuButton->OnClicked.AddDynamic(this, &AArchVizController::InitLoadMode);
+    
+    InitializeAndSetUpManagers();
 
-
-		MainUI->AddToViewport(1);
-	}
-
-
-	if (IsValid(RoadConstructionManager))
-	{
-		RoadConstructionManager->SetUp();
-	}
-
-	if (IsValid(HouseConstructionManager))
-	{
-		HouseConstructionManager->SetUp();
-	}
-
-	if(IsValid(InteriorDesignManager))
-	{
-		InteriorDesignManager->SetUp();
-	}
-
-	if(IsValid(SaveAndLoadManager))
-	{
-		SaveAndLoadManager->SetUp();
-	}
-
-	InitLoadMode();
-
-	SaveAndLoadManager->bFirstTime = false;
+    InitLoadMode();
 
 }
 
 void AArchVizController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if(IsValid(CurrentManager))
-	{
-		CurrentManager->End();
-	}
+    if (IsValid(CurrentManager))
+    {
+        CurrentManager->End();
+    }
 
-	Super::EndPlay(EndPlayReason);
+    Super::EndPlay(EndPlayReason);
 }
+
+
+void AArchVizController::InitializeAndSetUpManagers()
+{
+	RoadConstructionManager = NewObject<URoadConstructionManager>(this, RoadConstructionManagerClass);
+	HouseConstructionManager = NewObject<UHouseConstructionManager>(this, HouseConstructionManagerClass);
+	InteriorDesignManager = NewObject<UInteriorDesignManager>(this, InteriorDesignManagerClass);
+	SaveAndLoadManager = NewObject<USaveAndLoadManager>(this, SaveAndLoadManagerClass);
+
+    if (IsValid(RoadConstructionManager))
+    {
+        RoadConstructionManager->SetUp();
+    }
+
+    if (IsValid(HouseConstructionManager))
+    {
+        HouseConstructionManager->SetUp();
+    }
+
+    if (IsValid(InteriorDesignManager))
+    {
+        InteriorDesignManager->SetUp();
+    }
+
+    if (IsValid(SaveAndLoadManager))
+    {
+        SaveAndLoadManager->SetUp();
+    }
+}
+
 
 FSlateBrush AArchVizController::GetBrushWithTint(const FLinearColor& Color)
 {
-	FSlateBrush Brush = FSlateBrush();
-	Brush.DrawAs = ESlateBrushDrawType::RoundedBox;
-	Brush.OutlineSettings.RoundingType = ESlateBrushRoundingType::Type::FixedRadius;
-	Brush.OutlineSettings.CornerRadii = FVector4d(10,10,10,10);
-	Brush.TintColor = FLinearColor(Color);
+    FSlateBrush Brush = FSlateBrush();
+    Brush.DrawAs = ESlateBrushDrawType::RoundedBox;
+    Brush.OutlineSettings.RoundingType = ESlateBrushRoundingType::Type::FixedRadius;
+    Brush.OutlineSettings.CornerRadii = FVector4d(10, 10, 10, 10);
+    Brush.TintColor = FLinearColor(Color);
 
-	return Brush;
-};
+    return Brush;
+}
 
-void AArchVizController::CleanUp()
+void AArchVizController::CleanUp() const
 {
-	if (IsValid(CurrentManager))
-	{
-		CurrentManager->End();
-	}
+    if (IsValid(CurrentManager))
+    {
+        CurrentManager->End();
+    }
 
-	MainUI->RoadButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
-	MainUI->HouseButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
-	MainUI->InteriorButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
-	MainUI->SaveButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
-	MainUI->MenuButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
+    ClearAllInputMappings();
 
-
+    switch (CurrentMode)
+    {
+    case EMode::RoadConstruction:
+        MainUI->RoadButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
+        break;
+    case EMode::HouseConstruction:
+        MainUI->HouseButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
+        break;
+    case EMode::InteriorDesign:
+        MainUI->InteriorButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
+        break;
+    case EMode::SaveMode:
+        MainUI->SaveButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
+        break;
+    case EMode::LoadMode:
+        MainUI->MenuButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
+        break;
+    }
 }
 
 void AArchVizController::InitRoadConstructionMode()
 {
-	CleanUp();
+    CleanUp();
+    CurrentMode = EMode::RoadConstruction;
+    MainUI->RoadButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
+    SetUpInputForRoadConstructionMode();
+    CurrentManager = RoadConstructionManager;
 
-	CurrentMode = EMode::RoadConstruction;
-
-	MainUI->RoadButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
-
-	SetUpInputForRoadConstructionMode();
-
-	CurrentManager = RoadConstructionManager;
-
-	if (IsValid(CurrentManager))
-	{
-		CurrentManager->Start();
-	}
+    if (IsValid(CurrentManager))
+    {
+        CurrentManager->Start();
+    }
 }
 
 void AArchVizController::InitHouseConstructionMode()
 {
-	CleanUp();
+    CleanUp();
+    CurrentMode = EMode::HouseConstruction;
+    MainUI->HouseButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
+    SetUpInputForHouseConstructionMode();
+    CurrentManager = HouseConstructionManager;
 
-	CurrentMode = EMode::HouseConstruction;
-
-	MainUI->HouseButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
-
-	SetUpInputForHouseConstructionMode();
-
-	CurrentManager = HouseConstructionManager;
-
-	if (IsValid(CurrentManager))
-	{
-		CurrentManager->Start();
-	}
+    if (IsValid(CurrentManager))
+    {
+        CurrentManager->Start();
+    }
 }
 
 void AArchVizController::InitInteriorDesignMode()
 {
+    CleanUp();
+    CurrentMode = EMode::InteriorDesign;
+    MainUI->InteriorButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
+    SetUpInputForInteriorDesignMode();
+    CurrentManager = InteriorDesignManager;
 
-	CleanUp();
-
-	CurrentMode = EMode::InteriorDesign;
-
-	MainUI->InteriorButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
-
-	SetUpInputForInteriorDesignMode();
-
-	CurrentManager = InteriorDesignManager;
-
-	if (IsValid(CurrentManager))
-	{
-		CurrentManager->Start();
-	}
-
+    if (IsValid(CurrentManager))
+    {
+        CurrentManager->Start();
+    }
 }
 
 void AArchVizController::InitSaveMode()
 {
-	CleanUp();
+    CleanUp();
+    CurrentMode = EMode::SaveMode;
+    MainUI->SaveButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
+    CurrentManager = SaveAndLoadManager;
 
-	CurrentMode = EMode::SaveMode;
-
-	MainUI->SaveButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
-
-	CurrentManager = SaveAndLoadManager;
-
-	if (IsValid(CurrentManager))
-	{
-		CurrentManager->Start();
-		SaveAndLoadManager->ShowSaveMenu();
-	}
-	
-	
-	
+    if (IsValid(CurrentManager))
+    {
+        CurrentManager->Start();
+    }
 }
 
 void AArchVizController::InitLoadMode()
 {
-	CleanUp();
+    CleanUp();
+    CurrentMode = EMode::LoadMode;
+    MainUI->MenuButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
+    CurrentManager = SaveAndLoadManager;
 
-	CurrentMode = EMode::LoadMode;
-
-	MainUI->MenuButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
-
-	CurrentManager = SaveAndLoadManager;
-
-	if (IsValid(CurrentManager))
-	{
-		CurrentManager->Start();
-		SaveAndLoadManager->ShowLoadMenu();
-	}
+    if (IsValid(CurrentManager))
+    {
+        CurrentManager->Start();
+    }
 }
 
-
-
-AActor* AArchVizController::GetActorUnderCursor(const TArray<AActor*>& IgnoredActors)
+AActor* AArchVizController::GetActorUnderCursor(const TArray<AActor*>& IgnoredActors) const
 {
-	const FHitResult HitResult = GetHitResult(IgnoredActors);
+    const FHitResult HitResult = GetHitResult(IgnoredActors);
+    return HitResult.GetActor();
+}
 
-	if (AActor* HitActor = HitResult.GetActor())
-	{
-		return HitActor;
-	}
-
-	return nullptr;
-};
-
-UPrimitiveComponent* AArchVizController::GetComponentUnderCursor(const TArray<AActor*>& IgnoredActors)
+UPrimitiveComponent* AArchVizController::GetComponentUnderCursor(const TArray<AActor*>& IgnoredActors) const
 {
-	const FHitResult HitResult = GetHitResult(IgnoredActors);
-
-	if (UPrimitiveComponent* HitComponent = HitResult.GetComponent())
-	{
-		return HitComponent;
-	}
-
-	return nullptr;
+    const FHitResult HitResult = GetHitResult(IgnoredActors);
+    return HitResult.GetComponent();
 }
 
 FHitResult AArchVizController::GetHitResult(const TArray<AActor*>& IgnoredActors) const
 {
-	FHitResult HitResult;
+    FHitResult HitResult;
+    FVector StartLocation, WorldDirection;
 
-	if (FVector StartLocation, WorldDirection; DeprojectMousePositionToWorld(StartLocation, WorldDirection))
-	{
-		FVector EndLocation = StartLocation + WorldDirection * 100000;
+    if (DeprojectMousePositionToWorld(StartLocation, WorldDirection))
+    {
+        FVector EndLocation = StartLocation + WorldDirection * 100000;
+        FCollisionQueryParams Params;
+        Params.bTraceComplex = true;
+        Params.AddIgnoredActor(GetPawn());
+        Params.AddIgnoredActors(IgnoredActors);
 
-		FCollisionQueryParams Params;
-		Params.bTraceComplex = true;
-
-		Params.AddIgnoredActor(GetPawn());
-		Params.AddIgnoredActors(IgnoredActors);
-
-
-		GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation,
-			ECC_Visibility, Params);
-	}
-	return HitResult;
+        GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, Params);
+    }
+    return HitResult;
 }
 
+EMode AArchVizController::GetCurrentMode() const
+{
+    return  CurrentMode;
+}
+
+UMainControllerUI* AArchVizController::GetMainUI() const
+{
+    return MainUI;
+}
+
+void AArchVizController::ClearAllInputMappings() const
+{
+    if (auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+    {
+        if (const auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+        {
+            InputSubsystem->ClearAllMappings();
+        }
+    }
+}
 
 void AArchVizController::SetUpInputForRoadConstructionMode()
 {
-	auto LeftClickAction = NewObject<UInputAction>(this);
-	auto UKeyAction = NewObject<UInputAction>(this);
+    const auto LeftClickAction = NewObject<UInputAction>(this);
+    const auto UKeyAction = NewObject<UInputAction>(this);
+    RoadConstructionMapping = NewObject<UInputMappingContext>(this);
+    RoadConstructionMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
+    RoadConstructionMapping->MapKey(UKeyAction, EKeys::Z);
 
-	RoadConstructionMapping = NewObject<UInputMappingContext>(this);
+    if (const auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+    {
+        EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, RoadConstructionManager, &URoadConstructionManager::OnLeftClick);
+        EnhancedInputComponent->BindAction(UKeyAction, ETriggerEvent::Completed, RoadConstructionManager, &URoadConstructionManager::OnUKeyDown);
 
-	RoadConstructionMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
-	RoadConstructionMapping->MapKey(UKeyAction, EKeys::Z);
-
-
-	if (auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
-	{
-		EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, RoadConstructionManager, &URoadConstructionManager::OnLeftClick);
-		EnhancedInputComponent->BindAction(UKeyAction, ETriggerEvent::Completed, RoadConstructionManager, &URoadConstructionManager::OnUKeyDown);
-
-
-		if (auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-		{
-			if (IsValid(HouseConstructionMapping))
-			{
-				InputSubsystem->RemoveMappingContext(HouseConstructionMapping);
-			}
-			if (IsValid(InteriorDesignMapping))
-			{
-				InputSubsystem->RemoveMappingContext(InteriorDesignMapping);
-			}
-			if (IsValid(RoadConstructionMapping))
-			{
-				InputSubsystem->AddMappingContext(RoadConstructionMapping, 0);
-			}
-		};
-	}
+        if (const auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+        {
+            InputSubsystem->ClearAllMappings();
+            if (IsValid(RoadConstructionMapping))
+            {
+                InputSubsystem->AddMappingContext(RoadConstructionMapping, 0);
+            }
+        }
+    }
 }
 
 void AArchVizController::SetUpInputForHouseConstructionMode()
 {
-	auto RotateAction = NewObject<UInputAction>(this);
-	auto MoveAction = NewObject<UInputAction>(this);
-	auto LeftClickAction = NewObject<UInputAction>(this);
+    const auto RotateAction = NewObject<UInputAction>(this);
+    const auto MoveAction = NewObject<UInputAction>(this);
+    const auto LeftClickAction = NewObject<UInputAction>(this);
+    HouseConstructionMapping = NewObject<UInputMappingContext>(this);
+    HouseConstructionMapping->MapKey(RotateAction, EKeys::R);
+    HouseConstructionMapping->MapKey(MoveAction, EKeys::M);
+    HouseConstructionMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
 
-	HouseConstructionMapping = NewObject<UInputMappingContext>(this);
-	HouseConstructionMapping->MapKey(RotateAction, EKeys::R);
-	HouseConstructionMapping->MapKey(MoveAction, EKeys::M);
+    if (const auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+    {
+        EnhancedInputComponent->BindAction(RotateAction, ETriggerEvent::Completed, HouseConstructionManager, &UHouseConstructionManager::OnRKeyDown);
+        EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, HouseConstructionManager, &UHouseConstructionManager::OnMKeyDown);
+        EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, HouseConstructionManager, &UHouseConstructionManager::OnLeftClick);
 
-	HouseConstructionMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
-
-
-	if (auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
-	{
-		EnhancedInputComponent->BindAction(RotateAction, ETriggerEvent::Completed, HouseConstructionManager, &UHouseConstructionManager::OnRKeyDown);
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, HouseConstructionManager, &UHouseConstructionManager::OnMKeyDown);
-		EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, HouseConstructionManager, &UHouseConstructionManager::OnLeftClick);
-
-		if (auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-		{
-			if (IsValid(RoadConstructionMapping))
-			{
-				InputSubsystem->RemoveMappingContext(RoadConstructionMapping);
-			}
-			if (IsValid(InteriorDesignMapping))
-			{
-				InputSubsystem->RemoveMappingContext(InteriorDesignMapping);
-			}
-			if (IsValid(HouseConstructionMapping))
-			{
-				InputSubsystem->AddMappingContext(HouseConstructionMapping, 0);
-			}
-		};
-	}
+        if (const auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+        {
+            InputSubsystem->ClearAllMappings();
+            if (IsValid(HouseConstructionMapping))
+            {
+                InputSubsystem->AddMappingContext(HouseConstructionMapping, 0);
+            }
+        }
+    }
 }
 
 void AArchVizController::SetUpInputForInteriorDesignMode()
 {
-	auto RotateAction = NewObject<UInputAction>(this);
-	auto MoveAction = NewObject<UInputAction>(this);
-	auto LeftClickAction = NewObject<UInputAction>(this);
+    const auto RotateAction = NewObject<UInputAction>(this);
+    const auto MoveAction = NewObject<UInputAction>(this);
+    const auto LeftClickAction = NewObject<UInputAction>(this);
+    InteriorDesignMapping = NewObject<UInputMappingContext>(this);
+    InteriorDesignMapping->MapKey(RotateAction, EKeys::R);
+    InteriorDesignMapping->MapKey(MoveAction, EKeys::M);
+    InteriorDesignMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
 
-	InteriorDesignMapping = NewObject<UInputMappingContext>(this);
+    if (const auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+    {
+        EnhancedInputComponent->BindAction(RotateAction, ETriggerEvent::Completed, InteriorDesignManager, &UInteriorDesignManager::OnRKeyDown);
+        EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, InteriorDesignManager, &UInteriorDesignManager::OnMKeyDown);
+        EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, InteriorDesignManager, &UInteriorDesignManager::OnLeftClick);
 
-	InteriorDesignMapping->MapKey(RotateAction, EKeys::R);
-	InteriorDesignMapping->MapKey(MoveAction, EKeys::M);
-	InteriorDesignMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
-
-
-	if (auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
-	{
-		EnhancedInputComponent->BindAction(RotateAction, ETriggerEvent::Completed, InteriorDesignManager, &UInteriorDesignManager::OnRKeyDown);
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, InteriorDesignManager, &UInteriorDesignManager::OnMKeyDown);
-		EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, InteriorDesignManager, &UInteriorDesignManager::OnLeftClick);
-
-		if (auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-		{
-			if (IsValid(RoadConstructionMapping))
-			{
-				InputSubsystem->RemoveMappingContext(RoadConstructionMapping);
-			}
-			if (IsValid(HouseConstructionMapping))
-			{
-				InputSubsystem->RemoveMappingContext(HouseConstructionMapping);
-			}
-			if (IsValid(InteriorDesignMapping))
-			{
-				InputSubsystem->AddMappingContext(InteriorDesignMapping, 0);
-			}
-		};
-	}
+        if (const auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+        {
+            InputSubsystem->ClearAllMappings();
+            if (IsValid(InteriorDesignMapping))
+            {
+                InputSubsystem->AddMappingContext(InteriorDesignMapping, 0);
+            }
+        }
+    }
 }
-
-

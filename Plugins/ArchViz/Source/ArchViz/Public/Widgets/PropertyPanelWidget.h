@@ -75,7 +75,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UScrollableListWidget* WallMaterialList;
 
-
 	UPROPERTY(meta = (BindWidget))
 	UScrollableListWidget* RoadMaterialList;
 
@@ -88,7 +87,11 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UScrollableListWidget* DoorFrameMaterialList;
 
+	UPROPERTY(meta = (BindWidget))
+	UScrollableListWidget* CeilingMaterialList;
 
+	UPROPERTY(meta = (BindWidget))
+	UScrollableListWidget* WindowMaterialList;
 
 	virtual void NativeConstruct() override;
 

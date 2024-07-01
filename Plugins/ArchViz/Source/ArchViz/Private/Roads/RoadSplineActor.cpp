@@ -94,6 +94,7 @@ void ARoadSplineActor::UpdateRoad()
 		const float StartDistance = Spline->GetDistanceAlongSplineAtSplinePoint(i);
 		const float EndDistance = Spline->GetDistanceAlongSplineAtSplinePoint(i + 1);
 		const float SegmentLength = EndDistance - StartDistance;
+
 		const int32 NumberOfSegments = FMath::CeilToInt(SegmentLength / MeshLength);
 
 		for (int32 j = 0; j < NumberOfSegments; ++j)
@@ -104,8 +105,9 @@ void ARoadSplineActor::UpdateRoad()
 				SplineMeshComponent->SetMobility(EComponentMobility::Movable);
 				SplineMeshComponent->AttachToComponent(Spline, FAttachmentTransformRules::KeepRelativeTransform);
 				SplineMeshComponent->SetStaticMesh(SourceStaticMesh);
+				SplineMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+				SplineMeshComponent->SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 				SplineMeshComponent->RegisterComponent();
-
 				SplineMeshComponent->SetRenderCustomDepth(true);
 				SplineMeshComponent->CustomDepthStencilValue = 2;
 
@@ -116,26 +118,28 @@ void ARoadSplineActor::UpdateRoad()
 
 			SplineMeshComponent->SetVisibility(true);
 
-			float StrechedMeshLength = SegmentLength / NumberOfSegments;
+			const float StretchedMeshLength = SegmentLength / NumberOfSegments;
 
-			float LocalStartDistance = StartDistance + j * StrechedMeshLength - 200;
-			float LocalEndDistance = StartDistance + (j + 1) * StrechedMeshLength - 200;
+			const float LocalStartDistance = StartDistance + j * StretchedMeshLength - 200;
+			const float LocalEndDistance = StartDistance + (j + 1) * StretchedMeshLength - 200;
 
 			const FVector StartLocation = Spline->GetLocationAtDistanceAlongSpline(LocalStartDistance, ESplineCoordinateSpace::Local);
 			const FVector StartTangent = Spline->GetTangentAtDistanceAlongSpline(LocalStartDistance, ESplineCoordinateSpace::Local).GetClampedToMaxSize(MeshLength);
 			const FVector EndLocation = Spline->GetLocationAtDistanceAlongSpline(LocalEndDistance, ESplineCoordinateSpace::Local);
 			const FVector EndTangent = Spline->GetTangentAtDistanceAlongSpline(LocalEndDistance, ESplineCoordinateSpace::Local).GetClampedToMaxSize(MeshLength);
 
+
 			SplineMeshComponent->SetStartAndEnd(StartLocation, StartTangent, EndLocation, EndTangent, true);
 			SplineMeshComponent->SetStartScale(FVector2D(ScaleFactor, 1));
 			SplineMeshComponent->SetEndScale(FVector2D(ScaleFactor, 1));
-			SplineMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-			SplineMeshComponent->SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
-			if(IsValid(Material))
+
+
+			if (IsValid(Material))
 			{
 				SplineMeshComponent->SetMaterial(0, Material);
 			}
 
+		
 			++SegmentIndex;
 		}
 	}

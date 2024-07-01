@@ -13,7 +13,8 @@ enum class EItemCategory : uint8
     FloorPlaceable,
     CeilingPlaceable,
     Table,
-    TablePlaceable
+    TablePlaceable,
+    Anywhere
 };
 
 UCLASS()

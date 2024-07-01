@@ -95,7 +95,10 @@ struct FFloor {
 	FVector Dimensions;
 
 	UPROPERTY()
-	UMaterialInterface* Material;
+	UMaterialInterface* BottomMaterial;
+
+	UPROPERTY()
+	UMaterialInterface* TopMaterial;
 
 	UPROPERTY()
 	int32 ParentActorId;
@@ -155,7 +158,7 @@ class ARCHVIZ_API UArchVizSave : public USaveGame
 {
 	GENERATED_BODY()
 
-	public:
+public:
 
 	UPROPERTY()
 	TArray<FRoad> RoadActorArray;

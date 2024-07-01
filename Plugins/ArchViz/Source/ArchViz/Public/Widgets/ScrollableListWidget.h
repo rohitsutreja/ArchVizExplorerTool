@@ -22,6 +22,8 @@ enum class EArchItem
 	Wall,
     Floor,
     Door,
+    DoorFrame,
+    Ceiling
 };
 
 

@@ -6,6 +6,7 @@
 #include "ComponentUtils.h"
 #include "Components/TextBlock.h"
 #include "House/WallActor.h"
+#include "Widgets/ScrollableListWidget.h"
 
 AWindowActor::AWindowActor()
 {
@@ -14,6 +15,16 @@ AWindowActor::AWindowActor()
 
     WindowComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorFrame"));
     WindowComponent->SetupAttachment(RootComponent);
+}
+
+void AWindowActor::OnMaterialChange(FMaterialInfo MaterialInfo)
+{
+    Material = MaterialInfo.Material;
+
+    if(IsValid(Material))
+    {
+        WindowComponent->SetMaterial(0, Material);
+    }
 }
 
 void AWindowActor::BeginPlay()
@@ -27,6 +38,7 @@ void AWindowActor::BeginPlay()
     {
         PropertyPanelUI->SwitchToWidget(5);
         PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Window")));
+        PropertyPanelUI->WindowMaterialList->OnMaterialChange.AddDynamic(this, &AWindowActor::OnMaterialChange);
 
     }
 

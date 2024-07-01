@@ -17,6 +17,9 @@ class ARCHVIZ_API AWindowActor : public AHouseComponent
 public:
 	AWindowActor();
 
+	UFUNCTION()
+	void OnMaterialChange(FMaterialInfo MaterialInfo);
+
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 

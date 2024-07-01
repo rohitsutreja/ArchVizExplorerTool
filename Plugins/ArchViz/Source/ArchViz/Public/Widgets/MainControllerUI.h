@@ -51,6 +51,8 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UBorder* NotificationPanel;
 
+
+
 	UFUNCTION(BlueprintCallable)
 	void ShowNotification(const FString& Message);
 

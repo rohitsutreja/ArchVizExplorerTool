@@ -66,9 +66,9 @@ void AWallActor::UpdateWall()
         WallSegment->SetStaticMesh(WallSegmentMesh);
         WallSegment->SetRelativeLocation(FVector(i * LengthOfSegment, 0, 0));
         WallSegment->RegisterComponent();
-        if (IsValid(Material))
+        if (IsValid(BottomMaterial))
         {
-            WallSegment->SetMaterial(0, Material);
+            WallSegment->SetMaterial(0, BottomMaterial);
         }
         ArrayOfWallSegments.Add(WallSegment);
     }

@@ -146,6 +146,21 @@ void USaveAndLoadManager::Start()
     {
         SaveAndLoadUI->AddToViewport(1);
     }
+
+	if(Controller->GetCurrentMode() == EMode::SaveMode)
+	{
+		ShowSaveMenu();
+	}
+	else
+	{
+		ShowLoadMenu();
+	}
+
+
+	if (bFirstTime)
+	{
+		bFirstTime = false;
+	}
 }
 
 void USaveAndLoadManager::End()
@@ -153,27 +168,26 @@ void USaveAndLoadManager::End()
 	if (IsValid(SaveAndLoadUI))
 		SaveAndLoadUI->RemoveFromParent();
 
-	if (IsValid(Controller->MainUI))
+	if (IsValid(Controller->GetMainUI()))
 	{
-		Controller->MainUI->SaveButtonBorder->SetBrushColor(FColor::Black);
-		Controller->MainUI->MenuButtonBorder->SetBrushColor(FColor::Black);
+		Controller->GetMainUI()->SaveButtonBorder->SetBrushColor(FColor::Black);
+		Controller->GetMainUI()->MenuButtonBorder->SetBrushColor(FColor::Black);
 	}
 }
 
 
-void USaveAndLoadManager::ShowLoadMenu()
+void USaveAndLoadManager::ShowLoadMenu() const
 {
     if (IsValid(SaveAndLoadUI))
     {
 
-		Controller->MainUI->SaveButtonBorder->SetBrushColor(FColor::Green);
-		Controller->MainUI->MenuButtonBorder->SetBrushColor(FColor::Green);
+		Controller->GetMainUI()->SaveButtonBorder->SetBrushColor(FColor::Green);
+		Controller->GetMainUI()->MenuButtonBorder->SetBrushColor(FColor::Green);
 
         SaveAndLoadUI->AddToViewport(1);
 		SaveAndLoadUI->LoadWidgetSwitcher->SetActiveWidgetIndex(0);
-
-
         SaveAndLoadUI->MainWidgetSwitcher->SetActiveWidgetIndex(0);
+
 		if(bFirstTime)
 		{
 			SaveAndLoadUI->CloseButton->SetVisibility(ESlateVisibility::Collapsed);
@@ -192,8 +206,8 @@ void USaveAndLoadManager::ShowSaveMenu()
 
 		if(CurrentSlotName.IsEmpty())
 		{
-			Controller->MainUI->SaveButtonBorder->SetBrushColor(FColor::Green);
-			Controller->MainUI->MenuButtonBorder->SetBrushColor(FColor::Green);
+			Controller->GetMainUI()->SaveButtonBorder->SetBrushColor(FColor::Green);
+			Controller->GetMainUI()->MenuButtonBorder->SetBrushColor(FColor::Green);
 
 			SaveAndLoadUI->AddToViewport(1);
 			SaveAndLoadUI->MainWidgetSwitcher->SetActiveWidgetIndex(1);
@@ -269,7 +283,17 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		RoadData.Type = RoadActor->GetTypeOfRoad();
 		RoadData.Width = RoadActor->GetWidth();
 		RoadData.Material = RoadActor->GetMaterial();
-		RoadData.ParentActorId = RoadActor->GetAttachParentActor() ? Cast<AArchActor>(RoadActor->GetAttachParentActor())->GetId() : -1;
+		if (IsValid(RoadActor->GetAttachParentActor()))
+		{
+			if (auto ParentActor = Cast<AArchActor>(RoadActor->GetAttachParentActor()))
+			{
+				RoadData.ParentActorId = ParentActor->GetId();
+			}
+		}
+		else
+		{
+			RoadData.ParentActorId = -1;
+		}
 		SaveGameInstance->RoadActorArray.Add(RoadData);
 	}
 
@@ -283,8 +307,18 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		WallData.NumberOfWallSegments = WallActor->GetNumberOfWallSegments();
 		WallData.Material = WallActor->GetMaterial();
 
+		if (IsValid(WallActor->GetAttachParentActor()))
+		{
+			if (auto ParentActor = Cast<AArchActor>(WallActor->GetAttachParentActor()))
+			{
+				WallData.ParentActorId = ParentActor->GetId();
+			}
+		}
+		else
+		{
+			WallData.ParentActorId = -1;
 
-		WallData.ParentActorId = WallActor->GetAttachParentActor() ? Cast<AArchActor>(WallActor->GetAttachParentActor())->GetId() : -1;
+		}
 
 		SaveGameInstance->WallActorArray.Add(WallData);
 	}
@@ -296,9 +330,21 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		FloorData.ID = FloorActor->GetId();
 
 		FloorData.Transform = FloorActor->GetActorTransform();
-		FloorData.Material = FloorActor->GetMaterial();
+		FloorData.BottomMaterial = FloorActor->GetBottomMaterial();
+		FloorData.TopMaterial = FloorActor->GetTopMaterial();
 		FloorData.Dimensions = FloorActor->GetDimensions();
-		FloorData.ParentActorId = FloorActor->GetAttachParentActor() ? Cast<AArchActor>(FloorActor->GetAttachParentActor())->GetId() : -1;
+		if (IsValid(FloorActor->GetAttachParentActor()))
+		{
+			if (auto ParentActor = Cast<AArchActor>(FloorActor->GetAttachParentActor()))
+			{
+				FloorData.ParentActorId = ParentActor->GetId();
+			}
+		}
+		else
+		{
+			FloorData.ParentActorId = -1;
+
+		}
 		SaveGameInstance->FloorActorArray.Add(FloorData);
 	}
 
@@ -314,7 +360,18 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		DoorData.bIsOpen = DoorActor->IsDoorOpen();
 		DoorData.ParentComponentIndex = DoorActor->ParentWallComponentIndex;
 
-		DoorData.ParentActorId = DoorActor->GetAttachParentActor() ? Cast<AArchActor>(DoorActor->GetAttachParentActor())->GetId() : -1;
+		if (IsValid(DoorActor->GetAttachParentActor()))
+		{
+			if (auto ParentActor = Cast<AArchActor>(DoorActor->GetAttachParentActor()))
+			{
+				DoorData.ParentActorId = ParentActor->GetId();
+			}
+		}
+		else
+		{
+			DoorData.ParentActorId = -1;
+
+		}
 		SaveGameInstance->DoorActorArray.Add(DoorData);
 	}
 
@@ -326,7 +383,17 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		InteriorData.ID = InteriorActor->GetId();
 		InteriorData.Transform = InteriorActor->GetActorTransform();
 		InteriorData.StaticMesh = InteriorActor->GetCurrentStaticMesh();
-		InteriorData.ParentActorId = InteriorActor->GetAttachParentActor() ? Cast<AArchActor>(InteriorActor->GetAttachParentActor())->GetId() : -1;
+		if(IsValid(InteriorActor->GetAttachParentActor()))
+		{
+			if(auto ParentActor = Cast<AArchActor>(InteriorActor->GetAttachParentActor()))
+			{
+				InteriorData.ParentActorId = ParentActor->GetId();
+			}
+		}
+		else
+		{
+			InteriorData.ParentActorId = -1;
+		}
 		SaveGameInstance->InteriorActorArray.Add(InteriorData);
 	}
 
@@ -337,9 +404,20 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		FWindow WindowData;
 		WindowData.ID = WindowActor->GetId();
 		WindowData.Transform = WindowActor->GetActorTransform();
-		WindowData.ParentActorId = WindowActor->GetAttachParentActor() ? Cast<AArchActor>(WindowActor->GetAttachParentActor())->GetId() : -1;
 		WindowData.WindowMaterial = WindowActor->GetMaterial();
 		WindowData.ParentComponentIndex = WindowActor->ParentWallComponentIndex;
+		if (IsValid(WindowActor->GetAttachParentActor()))
+		{
+			if (auto ParentActor = Cast<AArchActor>(WindowActor->GetAttachParentActor()))
+			{
+				WindowData.ParentActorId = ParentActor->GetId();
+			}
+		}
+		else
+		{
+			WindowData.ParentActorId = -1;
+
+		}
 		SaveGameInstance->WindowActorArray.Add(WindowData);
 	}
 
@@ -405,7 +483,8 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 			AFloorActor* FloorActor = GetWorld()->SpawnActor<AFloorActor>(FloorActorClass, FloorData.Transform);
 			FloorActor->SetActorTransform(FloorData.Transform);
 			FloorActor->SetDimensions(FloorData.Dimensions);
-			FloorActor->SetMaterial(FloorData.Material);
+			FloorActor->SetTopMaterial(FloorData.TopMaterial);
+			FloorActor->SetBottomMaterial(FloorData.BottomMaterial);
 			FloorActor->SynchronizePropertyPanel();
 			FloorActor->GenerateFloor();
 			IdToActorMap.Add(FloorData.ID, FloorActor);
@@ -474,12 +553,16 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 						if (auto ParentWall = Cast<AWallActor>(ParentActor); IsValid(ParentWall))
 						{
 							auto Door = Cast<ADoorActor>(Actor);
-							ParentWall->AddDoorAtIndex(Door->ParentWallComponentIndex, Door);
-							ParentWall->UpdateWall();
-							ParentWall->UnHighLightBorder();
+							if(IsValid(Door))
+							{
+								ParentWall->AddDoorAtIndex(Door->ParentWallComponentIndex, Door);
+								ParentWall->UpdateWall();
+								ParentWall->UnHighLightBorder();
+							}
+							
 						}
 					}
-					else if (Actor - IsA(AWindowActor::StaticClass()))
+					else if (Actor->IsA(AWindowActor::StaticClass()))
 					{
 						if (auto ParentWall = Cast<AWallActor>(ParentActor); IsValid(ParentWall))
 						{
@@ -509,10 +592,9 @@ void USaveAndLoadManager::ClearWholeWorld()
 {
 	for (TActorIterator<AArchActor> It(GetWorld()); It; ++It)
 	{
-		AArchActor* ArchActor = *It;
-		if (IsValid(ArchActor))
+		if (AArchActor* Actor = *It; IsValid(Actor))
 		{
-			ArchActor->Destroy();
+			Actor->Destroy();
 		}
 	}
 
