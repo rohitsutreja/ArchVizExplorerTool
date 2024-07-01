@@ -243,7 +243,7 @@ void UInteriorDesignManager::UpdateActorPlacement()
 		const FHitResult HitResult = Controller->GetHitResult({ SelectedActor });
 
 		SelectedActor->SetActorLocation(HitResult.Location);
-		SelectedActor->SnapActorToGrid(FVector{ 10 });
+		SelectedActor->SnapActorToGrid(FVector{ 5 });
 	}
 }
 

@@ -16,6 +16,9 @@ void UInteriorDesignWidget::NativeConstruct()
 	TableButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnTableButtonClicked);
 	PictureButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnPictureButtonClicked);
 	StairButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnStairButtonClicked);
+	BathroomButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnBathroomButtonClicked);
+	OtherItemsButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnOtherItemsButtonClicked);
+
 }
 
 void UInteriorDesignWidget::OnBedButtonClicked()
@@ -71,5 +74,21 @@ void UInteriorDesignWidget::OnStairButtonClicked()
 	MeshItemListBorder->SetVisibility(ESlateVisibility::Visible);
 
 	MeshItemsScrollList->ItemDataAsset = StairMeshList;
+	MeshItemsScrollList->PopulateItemsList();
+}
+
+void UInteriorDesignWidget::OnBathroomButtonClicked()
+{
+	MeshItemListBorder->SetVisibility(ESlateVisibility::Visible);
+
+	MeshItemsScrollList->ItemDataAsset = BathroomItemsList;
+	MeshItemsScrollList->PopulateItemsList();
+}
+
+void UInteriorDesignWidget::OnOtherItemsButtonClicked()
+{
+	MeshItemListBorder->SetVisibility(ESlateVisibility::Visible);
+
+	MeshItemsScrollList->ItemDataAsset = OtherItemsList;
 	MeshItemsScrollList->PopulateItemsList();
 }

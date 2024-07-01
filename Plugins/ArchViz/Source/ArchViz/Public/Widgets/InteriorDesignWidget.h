@@ -36,7 +36,14 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* StairButton;
-	
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* BathroomButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* OtherItemsButton;
+
+
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()
@@ -53,6 +60,11 @@ public:
 	void OnCeilingLightButtonClicked();
 	UFUNCTION()
 	void OnStairButtonClicked();
+	UFUNCTION()
+	void OnBathroomButtonClicked();
+	UFUNCTION()
+	void OnOtherItemsButtonClicked();
+
 
 	UPROPERTY(meta = (BindWidget))
 	UItemsList* MeshItemsScrollList;
@@ -80,4 +92,12 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	UItemDataAsset* StairMeshList;
+
+
+	UPROPERTY(EditAnywhere)
+	UItemDataAsset* BathroomItemsList;
+
+
+	UPROPERTY(EditAnywhere)
+	UItemDataAsset* OtherItemsList;
 };

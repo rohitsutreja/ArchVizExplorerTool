@@ -67,7 +67,7 @@ Build/*/**
 Saved/*
 
 # Dont Ignore SavedGames inside of Saved
-!Saved/SavedGames/
+!Saved/SaveGames
 
 # Compiled source files for the engine to use
 Intermediate/*

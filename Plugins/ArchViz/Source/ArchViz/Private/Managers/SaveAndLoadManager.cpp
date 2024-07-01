@@ -216,6 +216,7 @@ void USaveAndLoadManager::ShowSaveMenu()
 		else
 		{
 			Controller->Notify(TEXT("Saved Successfully."));
+
 			End();
 			SaveGame(CurrentSlotName);
 		}
@@ -257,9 +258,7 @@ void USaveAndLoadManager::DeleteSlotMetaData(const FString& SlotInfo)
 
 TArray<FString> USaveAndLoadManager::GetSaveSlots()
 {
-    UArchVizSave* MetadataInstance = Cast<UArchVizSave>(UGameplayStatics::LoadGameFromSlot("Metadata", 0));
-
-    if (MetadataInstance)
+	if (UArchVizSave* MetadataInstance = Cast<UArchVizSave>(UGameplayStatics::LoadGameFromSlot("Metadata", 0)))
     {
         return MetadataInstance->SaveMetaDataArray;
     }
@@ -296,7 +295,6 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		}
 		SaveGameInstance->RoadActorArray.Add(RoadData);
 	}
-
 
 	for (TActorIterator<AWallActor> It(GetWorld()); It; ++It)
 	{
@@ -348,7 +346,6 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		SaveGameInstance->FloorActorArray.Add(FloorData);
 	}
 
-
 	for (TActorIterator<ADoorActor> It(GetWorld()); It; ++It)
 	{
 		ADoorActor* DoorActor = *It;
@@ -375,7 +372,6 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		SaveGameInstance->DoorActorArray.Add(DoorData);
 	}
 
-
 	for (TActorIterator<AInteriorActor> It(GetWorld()); It; ++It)
 	{
 		AInteriorActor* InteriorActor = *It;
@@ -383,6 +379,7 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		InteriorData.ID = InteriorActor->GetId();
 		InteriorData.Transform = InteriorActor->GetActorTransform();
 		InteriorData.StaticMesh = InteriorActor->GetCurrentStaticMesh();
+		InteriorData.Category = InteriorActor->GetCategory();
 		if(IsValid(InteriorActor->GetAttachParentActor()))
 		{
 			if(auto ParentActor = Cast<AArchActor>(InteriorActor->GetAttachParentActor()))
@@ -396,7 +393,6 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		}
 		SaveGameInstance->InteriorActorArray.Add(InteriorData);
 	}
-
 
 	for (TActorIterator<AWindowActor> It(GetWorld()); It; ++It)
 	{
@@ -420,23 +416,14 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		}
 		SaveGameInstance->WindowActorArray.Add(WindowData);
 	}
-
-
-
 	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SlotName, 0);
 }
 
 void USaveAndLoadManager::LoadGame(const FString& SlotName)
 {
-	UArchVizSave* LoadGameInstance = Cast<UArchVizSave>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
-
-	
-
-	if (LoadGameInstance)
+	if (UArchVizSave* LoadGameInstance = Cast<UArchVizSave>(UGameplayStatics::LoadGameFromSlot(SlotName, 0)))
 	{
-
 		ClearWholeWorld();
-
 
 		TMap<int32, AActor*> IdToActorMap;
 		TMap<AActor*, int32> ActorToParentActorIdMap;
@@ -444,7 +431,6 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 		for (const FRoad& RoadData : LoadGameInstance->RoadActorArray)
 		{
 			ARoadSplineActor* RoadActor = GetWorld()->SpawnActor<ARoadSplineActor>(RoadSplineActorClass, RoadData.Transform);
-			RoadActor->SetActorTransform(RoadData.Transform);
 			RoadActor->SetSplinePoints(RoadData.SplinePoints);
 			RoadActor->SetTypeOfRoad(RoadData.Type);
 			RoadActor->SetWidth(RoadData.Width);
@@ -464,7 +450,6 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 		for (const FWall& WallData : LoadGameInstance->WallActorArray)
 		{
 			AWallActor* WallActor = GetWorld()->SpawnActor<AWallActor>(WallActorClass, WallData.Transform);
-			WallActor->SetActorTransform(WallData.Transform);
 			WallActor->SetNumberOfWallSegments(WallData.NumberOfWallSegments);
 			WallActor->SetMaterial(WallData.Material);
 			WallActor->UpdateWall();
@@ -481,7 +466,6 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 		for (const FFloor& FloorData : LoadGameInstance->FloorActorArray)
 		{
 			AFloorActor* FloorActor = GetWorld()->SpawnActor<AFloorActor>(FloorActorClass, FloorData.Transform);
-			FloorActor->SetActorTransform(FloorData.Transform);
 			FloorActor->SetDimensions(FloorData.Dimensions);
 			FloorActor->SetTopMaterial(FloorData.TopMaterial);
 			FloorActor->SetBottomMaterial(FloorData.BottomMaterial);
@@ -499,7 +483,6 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 		for (const FDoor& DoorData : LoadGameInstance->DoorActorArray)
 		{
 			ADoorActor* DoorActor = GetWorld()->SpawnActor<ADoorActor>(DoorActorClass, DoorData.Transform);
-			DoorActor->SetActorTransform(DoorData.Transform);
 			DoorActor->SetDoorMaterial(DoorData.DoorMaterial);
 			DoorActor->SetDoorFrameMaterial(DoorData.FrameMaterial);
 			DoorActor->ParentWallComponentIndex = DoorData.ParentComponentIndex;
@@ -518,7 +501,7 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 		for (const FInterior& InteriorData : LoadGameInstance->InteriorActorArray)
 		{
 			AInteriorActor* InteriorActor = GetWorld()->SpawnActor<AInteriorActor>(InteriorActorClass, InteriorData.Transform);
-			InteriorActor->SetActorTransform(InteriorData.Transform);
+			InteriorActor->SetCategory(InteriorData.Category);
 			InteriorActor->SetStaticMesh(InteriorData.StaticMesh);
 			IdToActorMap.Add(InteriorData.ID, InteriorActor);
 
@@ -532,8 +515,8 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 		for (const FWindow& WindowData : LoadGameInstance->WindowActorArray)
 		{
 			AWindowActor* WindowActor = GetWorld()->SpawnActor<AWindowActor>(WindowActorClass, WindowData.Transform);
-			WindowActor->SetActorTransform(WindowData.Transform);
 			IdToActorMap.Add(WindowData.ID, WindowActor);
+			WindowActor->ParentWallComponentIndex = WindowData.ParentComponentIndex;
 
 			if (WindowData.ParentActorId != -1)
 			{
@@ -559,7 +542,6 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 								ParentWall->UpdateWall();
 								ParentWall->UnHighLightBorder();
 							}
-							
 						}
 					}
 					else if (Actor->IsA(AWindowActor::StaticClass()))
@@ -572,7 +554,6 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 								ParentWall->AttachWindowAtIndex(Window->ParentWallComponentIndex, Window);
 								ParentWall->UpdateWall();
 								ParentWall->UnHighLightBorder();
-
 							}
 						}
 					}
