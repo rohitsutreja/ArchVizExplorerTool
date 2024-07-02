@@ -30,6 +30,10 @@ public:
 	UButton* InteriorButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* MenuButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* TemplateButton;
+
+
 
 
 	UPROPERTY(meta = (BindWidget))
@@ -42,6 +46,8 @@ public:
 	UBorder* InteriorButtonBorder;
 	UPROPERTY(meta = (BindWidget))
 	UBorder* MenuButtonBorder;
+	UPROPERTY(meta = (BindWidget))
+	UBorder* TemplateButtonBorder;
 
 
 
@@ -50,7 +56,6 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UBorder* NotificationPanel;
-
 
 
 	UFUNCTION(BlueprintCallable)

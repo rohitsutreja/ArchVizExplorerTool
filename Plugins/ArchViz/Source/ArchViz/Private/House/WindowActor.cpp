@@ -51,6 +51,7 @@ void AWindowActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
     {
         DetachFromWall();
     }
+
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -84,4 +85,13 @@ void AWindowActor::DetachFromWall()
 UMaterialInterface* AWindowActor::GetMaterial()
 {
     return Material;
+}
+
+void AWindowActor::SetMaterial(UMaterialInterface* InMaterial)
+{
+    Material =InMaterial;
+    if(IsValid(InMaterial))
+    {
+    WindowComponent->SetMaterial(0,InMaterial);
+    }
 }

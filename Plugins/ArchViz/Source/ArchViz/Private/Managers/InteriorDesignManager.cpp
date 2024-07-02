@@ -98,7 +98,6 @@ bool UInteriorDesignManager::IsPlacementValid(AInteriorActor* Actor)
 			case EItemCategory::Anywhere:
 				{
 				return true;
-				break;
 				}
 			}
 		}
@@ -223,9 +222,8 @@ void UInteriorDesignManager::EndActorPlacement()
 		{
 			auto HitActor = Controller->GetActorUnderCursor({ SelectedActor });
 
-			if(IsValid(HitActor))
+			if(IsValid(HitActor) && HitActor->IsA(AArchActor::StaticClass()))
 			{
-				
 				SelectedActor->AttachToComponent(HitActor->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 			}
 

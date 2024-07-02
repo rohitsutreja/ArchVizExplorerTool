@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HouseTemplate.h"
 #include "GameFramework/PlayerController.h"
 #include "ArchVizController.generated.h"
 
+class UHouseTemplateManager;
 class FUniqueIdGenerator;
 class UArchVizManager;
 class URoadConstructionManager;
@@ -26,7 +28,8 @@ enum class EMode : uint8
     HouseConstruction,
     InteriorDesign,
     SaveMode,
-    LoadMode
+    LoadMode,
+    HouseTemplate
 };
 
 UCLASS()
@@ -41,6 +44,7 @@ public:
 
     virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
     void InitializeAndSetUpManagers();
 
 
@@ -60,6 +64,9 @@ public:
     UFUNCTION()
     void InitInteriorDesignMode();
 
+    UFUNCTION()
+    void InitHouseTemplateMode();
+
 
 
     void CleanUp() const;
@@ -68,9 +75,11 @@ public:
     void SetUpInputForRoadConstructionMode();
     void SetUpInputForHouseConstructionMode();
     void SetUpInputForInteriorDesignMode();
+    void SetUpInputForHouseTemplateMode();
 
 
     static FSlateBrush GetBrushWithTint(const FLinearColor& Color);
+    AHouseTemplate* GetSavedHouseTemplate(const FString& TemplateName);
 
     AActor* GetActorUnderCursor(const TArray<AActor*>& IgnoredActors = {}) const;
     UPrimitiveComponent* GetComponentUnderCursor(const TArray<AActor*>& IgnoredActors = {}) const;
@@ -125,6 +134,13 @@ protected:
 
 
     UPROPERTY()
+    UHouseTemplateManager* HouseTemplateManager;
+
+    UPROPERTY(EditDefaultsOnly)
+    TSubclassOf<UHouseTemplateManager> HouseTemplateManagerClass;
+
+
+    UPROPERTY()
     USaveAndLoadManager* SaveAndLoadManager;
 
     UPROPERTY(EditDefaultsOnly)
@@ -142,4 +158,8 @@ protected:
 
     UPROPERTY()
     UInputMappingContext* InteriorDesignMapping;
+
+
+    UPROPERTY()
+    UInputMappingContext* HouseTemplateMapping;
 };

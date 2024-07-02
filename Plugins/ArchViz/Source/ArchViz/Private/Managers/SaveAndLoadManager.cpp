@@ -5,6 +5,7 @@
 
 #include "ArchVizController.h"
 #include "EngineUtils.h"
+#include "HouseTemplate.h"
 #include "Components/Button.h"
 #include "Components/EditableText.h"
 #include "Components/ScrollBox.h"
@@ -412,12 +413,185 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		else
 		{
 			WindowData.ParentActorId = -1;
-
 		}
 		SaveGameInstance->WindowActorArray.Add(WindowData);
 	}
 	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SlotName, 0);
 }
+
+
+AHouseTemplate* USaveAndLoadManager::GetHouseTemplate(const FString& SlotName)
+{
+	AHouseTemplate* House = GetWorld()->SpawnActor<AHouseTemplate>();
+
+	FVector HouseLocation{0};
+
+	if (UArchVizSave* LoadGameInstance = Cast<UArchVizSave>(UGameplayStatics::LoadGameFromSlot(SlotName, 0)))
+	{
+
+		TMap<int32, AActor*> IdToActorMap;
+		TMap<AActor*, int32> ActorToParentActorIdMap;
+
+		TArray<AActor*> ActorsWithoutParents;
+
+		for (const FWall& WallData : LoadGameInstance->WallActorArray)
+		{
+			AWallActor* WallActor = GetWorld()->SpawnActor<AWallActor>(WallActorClass, WallData.Transform);
+			WallActor->SetNumberOfWallSegments(WallData.NumberOfWallSegments);
+			WallActor->SetMaterial(WallData.Material);
+			WallActor->UpdateWall();
+			WallActor->SynchronizePropertyPanel();
+			WallActor->UnHighLightBorder();
+			IdToActorMap.Add(WallData.ID, WallActor);
+
+			if (WallData.ParentActorId != -1)
+			{
+				ActorToParentActorIdMap.Add(WallActor, WallData.ParentActorId);
+			}
+			else
+			{
+				ActorsWithoutParents.Add(WallActor);
+			}
+		}
+
+		for (const FFloor& FloorData : LoadGameInstance->FloorActorArray)
+		{
+			AFloorActor* FloorActor = GetWorld()->SpawnActor<AFloorActor>(FloorActorClass, FloorData.Transform);
+			FloorActor->SetDimensions(FloorData.Dimensions);
+			FloorActor->SetTopMaterial(FloorData.TopMaterial);
+			FloorActor->SetBottomMaterial(FloorData.BottomMaterial);
+			FloorActor->SynchronizePropertyPanel();
+			FloorActor->GenerateFloor();
+			IdToActorMap.Add(FloorData.ID, FloorActor);
+
+			if (FloorData.ParentActorId != -1)
+			{
+				ActorToParentActorIdMap.Add(FloorActor, FloorData.ParentActorId);
+			}
+			else
+			{
+				ActorsWithoutParents.Add(FloorActor);
+			}
+		}
+
+
+		for (const FDoor& DoorData : LoadGameInstance->DoorActorArray)
+		{
+			ADoorActor* DoorActor = GetWorld()->SpawnActor<ADoorActor>(DoorActorClass, DoorData.Transform);
+			DoorActor->SetDoorMaterial(DoorData.DoorMaterial);
+			DoorActor->SetDoorFrameMaterial(DoorData.FrameMaterial);
+			DoorActor->ParentWallComponentIndex = DoorData.ParentComponentIndex;
+			DoorData.bIsOpen ? DoorActor->OpenDoor() : DoorActor->CloseDoor();
+			DoorActor->SynchronizePropertyPanel();
+			IdToActorMap.Add(DoorData.ID, DoorActor);
+
+			if (DoorData.ParentActorId != -1)
+			{
+				ActorToParentActorIdMap.Add(DoorActor, DoorData.ParentActorId);
+			}
+			else
+			{
+				ActorsWithoutParents.Add(DoorActor);
+			}
+		}
+
+
+
+		for (const FInterior& InteriorData : LoadGameInstance->InteriorActorArray)
+		{
+			AInteriorActor* InteriorActor = GetWorld()->SpawnActor<AInteriorActor>(InteriorActorClass, InteriorData.Transform);
+			InteriorActor->SetCategory(InteriorData.Category);
+			InteriorActor->SetStaticMesh(InteriorData.StaticMesh);
+			IdToActorMap.Add(InteriorData.ID, InteriorActor);
+
+			if (InteriorData.ParentActorId != -1)
+			{
+				ActorToParentActorIdMap.Add(InteriorActor, InteriorData.ParentActorId);
+			}
+			else
+			{
+				ActorsWithoutParents.Add(InteriorActor);
+			}
+		}
+
+
+		for (const FWindow& WindowData : LoadGameInstance->WindowActorArray)
+		{
+			AWindowActor* WindowActor = GetWorld()->SpawnActor<AWindowActor>(WindowActorClass, WindowData.Transform);
+			IdToActorMap.Add(WindowData.ID, WindowActor);
+			WindowActor->ParentWallComponentIndex = WindowData.ParentComponentIndex;
+
+			if (WindowData.ParentActorId != -1)
+			{
+				ActorToParentActorIdMap.Add(WindowActor, WindowData.ParentActorId);
+			}
+			else
+			{
+				ActorsWithoutParents.Add(WindowActor);
+			}
+		}
+
+
+
+		if(!LoadGameInstance->FloorActorArray.IsEmpty())
+		{
+			HouseLocation = LoadGameInstance->FloorActorArray[0].Transform.GetLocation();
+		}
+
+		House->SetActorLocation(HouseLocation);
+
+		for (auto& [Actor, ParentActorId] : ActorToParentActorIdMap)
+		{
+			if (auto ParentActorPtr = IdToActorMap.Find(ParentActorId))
+			{
+				if (auto ParentActor = *ParentActorPtr; IsValid(ParentActor))
+				{
+					if (Actor->IsA(ADoorActor::StaticClass()))
+					{
+						if (auto ParentWall = Cast<AWallActor>(ParentActor); IsValid(ParentWall))
+						{
+							auto Door = Cast<ADoorActor>(Actor);
+							if (IsValid(Door))
+							{
+								ParentWall->AddDoorAtIndex(Door->ParentWallComponentIndex, Door);
+								ParentWall->UpdateWall();
+								ParentWall->UnHighLightBorder();
+							}
+						}
+					}
+					else if (Actor->IsA(AWindowActor::StaticClass()))
+					{
+						if (auto ParentWall = Cast<AWallActor>(ParentActor); IsValid(ParentWall))
+						{
+							auto Window = Cast<AWindowActor>(Actor);
+							if (IsValid(Window))
+							{
+								ParentWall->AttachWindowAtIndex(Window->ParentWallComponentIndex, Window);
+								ParentWall->UpdateWall();
+								ParentWall->UnHighLightBorder();
+							}
+						}
+					}
+					else
+					{
+						Actor->AttachToActor(ParentActor, FAttachmentTransformRules::KeepWorldTransform);
+					}
+				}
+
+			}
+		}
+
+		for (auto actor : ActorsWithoutParents)
+		{
+			actor->AttachToActor(House, FAttachmentTransformRules::KeepWorldTransform);
+		}
+
+	}
+
+	return House;
+
+}
+
 
 void USaveAndLoadManager::LoadGame(const FString& SlotName)
 {
@@ -517,6 +691,7 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 			AWindowActor* WindowActor = GetWorld()->SpawnActor<AWindowActor>(WindowActorClass, WindowData.Transform);
 			IdToActorMap.Add(WindowData.ID, WindowActor);
 			WindowActor->ParentWallComponentIndex = WindowData.ParentComponentIndex;
+			WindowActor->SetMaterial(WindowData.WindowMaterial);
 
 			if (WindowData.ParentActorId != -1)
 			{

@@ -28,7 +28,9 @@ public:
 	virtual void UnHighLightBorder() override;
 
 	void DetachFromWall();
+
 	UMaterialInterface* GetMaterial();
+	void SetMaterial(UMaterialInterface* InMaterial);
 
 	int32 ParentWallComponentIndex;
 

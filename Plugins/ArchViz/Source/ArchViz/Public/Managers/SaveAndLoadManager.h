@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HouseTemplate.h"
 #include "Managers/ArchVizManager.h"
 #include "SaveAndLoadManager.generated.h"
 
@@ -59,9 +60,12 @@ public:
 
 	TArray<FString> GetSaveSlots();
 
+	void ClearWholeWorld();
 	void SaveGame(const FString& SlotName);
 	void LoadGame(const FString& SlotName);
-	void ClearWholeWorld();
+
+	AHouseTemplate* GetHouseTemplate(const FString& SlotName);
+
 	void SynchronizeScrollListUI();
 
 	FString CurrentSlotName = TEXT("");

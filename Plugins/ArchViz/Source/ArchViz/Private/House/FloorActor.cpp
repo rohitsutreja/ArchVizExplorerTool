@@ -8,7 +8,6 @@
 
 AFloorActor::AFloorActor()
 {
-  
     Dimensions = FVector(400, 400, 20);
 
     ProcMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProcMesh"));
@@ -181,12 +180,6 @@ void AFloorActor::GenerateFloor()
 }
 
 
-
-  
-  
-
-
-
 void AFloorActor::OnConstruction(const FTransform& Transform)
 {
     Super::OnConstruction(Transform);
@@ -288,17 +281,14 @@ void AFloorActor::SetBottomMaterial(UMaterialInterface* InMaterial)
 
     if (IsValid(BottomMaterial))
     {
-        UE_LOG(LogTemp, Warning, TEXT("OK"));
         DynBottomMaterial = UMaterialInstanceDynamic::Create(BottomMaterial, this);
-
+        
         if (DynBottomMaterial)
         {
             DynBottomMaterial->SetVectorParameterValue(FName("Tiling/Offset"), FLinearColor(Dimensions.X / 400.0f, Dimensions.Y / 400.0f, 0, 0));
             ProcMesh->SetMaterial(0, DynBottomMaterial);
         }
     }
-
-
 }
 
 void AFloorActor::SetTopMaterial(UMaterialInterface* InMaterial)

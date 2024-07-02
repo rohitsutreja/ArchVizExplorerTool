@@ -1,23 +1,18 @@
 #include "ArchVizController.h"
-#include "EngineUtils.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputAction.h"
 #include "InputMappingContext.h"
-#include "NetworkMessage.h"
 #include "Components/Border.h"
 #include "Components/Button.h"
-#include "House/FloorActor.h"
-#include "House/WallActor.h"
-#include "Kismet/GameplayStatics.h"
 #include "Managers/HouseConstructionManager.h"
+#include "Managers/HouseTemplateManager.h"
 #include "Managers/InteriorDesignManager.h"
 #include "Managers/RoadConstructionManager.h"
 #include "Managers/SaveAndLoadManager.h"
-#include "SaveAndLoad/ArchVizSave.h"
 #include "Widgets/HouseConstructionWidget.h"
 #include "Widgets/MainControllerUI.h"
-#include "Widgets/ScrollableListWidget.h"
+
 
 AArchVizController::AArchVizController()
     : MainUI(nullptr), HouseConstructionUI(nullptr),
@@ -42,6 +37,7 @@ void AArchVizController::Tick(float DeltaSeconds)
     {
         InteriorDesignManager->UpdateActorPlacement();
     }
+
 }
 
 void AArchVizController::BeginPlay()
@@ -57,15 +53,14 @@ void AArchVizController::BeginPlay()
         MainUI->InteriorButton->OnClicked.AddDynamic(this, &AArchVizController::InitInteriorDesignMode);
         MainUI->SaveButton->OnClicked.AddDynamic(this, &AArchVizController::InitSaveMode);
         MainUI->MenuButton->OnClicked.AddDynamic(this, &AArchVizController::InitLoadMode);
+        MainUI->TemplateButton->OnClicked.AddDynamic(this, &AArchVizController::InitHouseTemplateMode);
 
         MainUI->AddToViewport(1);
     }
 
-    
     InitializeAndSetUpManagers();
 
-    InitLoadMode();
-
+	InitLoadMode();
 }
 
 void AArchVizController::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -84,6 +79,7 @@ void AArchVizController::InitializeAndSetUpManagers()
 	RoadConstructionManager = NewObject<URoadConstructionManager>(this, RoadConstructionManagerClass);
 	HouseConstructionManager = NewObject<UHouseConstructionManager>(this, HouseConstructionManagerClass);
 	InteriorDesignManager = NewObject<UInteriorDesignManager>(this, InteriorDesignManagerClass);
+    HouseTemplateManager = NewObject<UHouseTemplateManager>(this , HouseTemplateManagerClass);
 	SaveAndLoadManager = NewObject<USaveAndLoadManager>(this, SaveAndLoadManagerClass);
 
     if (IsValid(RoadConstructionManager))
@@ -105,6 +101,11 @@ void AArchVizController::InitializeAndSetUpManagers()
     {
         SaveAndLoadManager->SetUp();
     }
+
+    if(IsValid(HouseTemplateManager))
+    {
+        HouseTemplateManager->SetUp();
+    }
 }
 
 
@@ -117,6 +118,15 @@ FSlateBrush AArchVizController::GetBrushWithTint(const FLinearColor& Color)
     Brush.TintColor = FLinearColor(Color);
 
     return Brush;
+}
+
+AHouseTemplate* AArchVizController::GetSavedHouseTemplate(const FString& TemplateName)
+{
+    if(IsValid(SaveAndLoadManager))
+    {
+		return SaveAndLoadManager->GetHouseTemplate(TemplateName);
+    }
+    return nullptr;
 }
 
 void AArchVizController::CleanUp() const
@@ -138,6 +148,9 @@ void AArchVizController::CleanUp() const
         break;
     case EMode::InteriorDesign:
         MainUI->InteriorButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
+        break;
+    case EMode::HouseTemplate:
+        MainUI->TemplateButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
         break;
     case EMode::SaveMode:
         MainUI->SaveButtonBorder->SetBrush(GetBrushWithTint(FColor::Black));
@@ -183,11 +196,24 @@ void AArchVizController::InitInteriorDesignMode()
     MainUI->InteriorButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
     SetUpInputForInteriorDesignMode();
     CurrentManager = InteriorDesignManager;
-
     if (IsValid(CurrentManager))
     {
         CurrentManager->Start();
     }
+}
+
+void AArchVizController::InitHouseTemplateMode()
+{
+    CleanUp();
+    CurrentMode = EMode::HouseTemplate;
+    MainUI->TemplateButtonBorder->SetBrush(GetBrushWithTint(FColor::Green));
+    SetUpInputForHouseTemplateMode();
+    CurrentManager = HouseTemplateManager;
+    if(IsValid(HouseTemplateManager))
+    {
+		 HouseTemplateManager->Start();
+    }
+    
 }
 
 void AArchVizController::InitSaveMode()
@@ -258,7 +284,7 @@ UMainControllerUI* AArchVizController::GetMainUI() const
 
 void AArchVizController::ClearAllInputMappings() const
 {
-    if (auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+    if (Cast<UEnhancedInputComponent>(InputComponent))
     {
         if (const auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
         {
@@ -344,3 +370,29 @@ void AArchVizController::SetUpInputForInteriorDesignMode()
         }
     }
 }
+
+void AArchVizController::SetUpInputForHouseTemplateMode()
+{
+    const auto RotateAction = NewObject<UInputAction>(this);
+    const auto LeftClickAction = NewObject<UInputAction>(this);
+
+    HouseTemplateMapping = NewObject<UInputMappingContext>(this);
+    HouseTemplateMapping->MapKey(RotateAction, EKeys::R);
+    HouseTemplateMapping->MapKey(LeftClickAction, EKeys::LeftMouseButton);
+
+    if (const auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+    {
+        EnhancedInputComponent->BindAction(RotateAction, ETriggerEvent::Completed, HouseTemplateManager, &UHouseTemplateManager::OnRKeyDown);
+        EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Completed, HouseTemplateManager, &UHouseTemplateManager::OnLeftClick);
+
+        if (const auto InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+        {
+            InputSubsystem->ClearAllMappings();
+            if (IsValid(HouseTemplateManager))
+            {
+                InputSubsystem->AddMappingContext(HouseTemplateMapping, 0);
+            }
+        }
+    }
+}
+

@@ -41,7 +41,7 @@ void ADoorActor::BeginPlay()
         PropertyPanelUI->DoorFrameMaterialList->OnMaterialChange.AddDynamic(this, &ADoorActor::OnDoorFrameMaterialChange);
     }
 
-    SetActorRotation(FRotator(0, 90, 0)); // Adjusted initial rotation
+    SetActorRotation(FRotator(0, 90, 0)); 
 }
 
 void ADoorActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -56,7 +56,7 @@ void ADoorActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ADoorActor::OpenDoor()
 {
-    FRotator NewRotation(0, 90, 0); // Adjusted rotation
+    FRotator NewRotation(0, 90, 0); 
     DoorComponent->SetRelativeRotation(NewRotation);
 
     bIsOpen = true;
@@ -64,7 +64,7 @@ void ADoorActor::OpenDoor()
 
 void ADoorActor::CloseDoor()
 {
-    FRotator NewRotation(0, 0, 0); // Adjusted rotation
+    FRotator NewRotation(0, 0, 0); 
     DoorComponent->SetRelativeRotation(NewRotation);
 
     bIsOpen = false;

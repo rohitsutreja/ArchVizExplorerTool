@@ -50,66 +50,10 @@ void AWallActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AWallActor::UpdateWall()
 {
- /*   for (auto& Temp : ArrayOfWallSegments)
-    {
-        if (IsValid(Temp))
-        {
-            Temp->DestroyComponent();
-        }
-    }
-    ArrayOfWallSegments.Empty();
-
-    for (int i = 0; i < NumberOfWallSegments; i++)
-    {
-        auto WallSegment = NewObject<UStaticMeshComponent>(this);
-        WallSegment->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-        WallSegment->SetStaticMesh(WallSegmentMesh);
-        WallSegment->SetRelativeLocation(FVector(i * LengthOfSegment, 0, 0));
-        WallSegment->RegisterComponent();
-        if (IsValid(BottomMaterial))
-        {
-            WallSegment->SetMaterial(0, BottomMaterial);
-        }
-        ArrayOfWallSegments.Add(WallSegment);
-    }
-
-    for (auto& [idx, Door] : IndexToDoorMapping)
-    {
-        if (idx < ArrayOfWallSegments.Num())
-        {
-            if (IsValid(ArrayOfWallSegments[idx]))
-            {
-                ArrayOfWallSegments[idx]->SetStaticMesh(DoorHallSegment);
-                Door->AttachToComponent(ArrayOfWallSegments[idx], FAttachmentTransformRules::KeepRelativeTransform, FName(TEXT("DoorSocket")));
-                Door->SetActorRelativeLocation(FVector::ZeroVector);
-                Door->SetActorRelativeRotation(FRotator::ZeroRotator);
-            }
-        }
-    }
-
-
-    for (auto& [idx, Window] : IndexToWindowMapping)
-    {
-        if (idx < ArrayOfWallSegments.Num())
-        {
-            if (IsValid(ArrayOfWallSegments[idx]))
-            {
-                ArrayOfWallSegments[idx]->SetStaticMesh(WindowSegmentMesh);
-                Window->AttachToComponent(ArrayOfWallSegments[idx], FAttachmentTransformRules::KeepRelativeTransform, FName(TEXT("WindowSocket")));
-                Window->SetActorRelativeLocation(FVector::ZeroVector);
-                Window->SetActorRelativeRotation(FRotator::ZeroRotator);
-            }
-        }
-    }
-
-    HighLightBorder();*/
-
-
     int32 CurrentNumSegments = ArrayOfWallSegments.Num();
 
     if (CurrentNumSegments > NumberOfWallSegments)
     {
-        // Remove extra segments
         for (int32 i = NumberOfWallSegments; i < CurrentNumSegments; i++)
         {
             if (ArrayOfWallSegments[i])
@@ -121,7 +65,6 @@ void AWallActor::UpdateWall()
     }
     else if (CurrentNumSegments < NumberOfWallSegments)
     {
-        // Add new segments
         for (int32 i = CurrentNumSegments; i < NumberOfWallSegments; i++)
         {
             auto WallSegment = NewObject<UStaticMeshComponent>(this);
@@ -131,7 +74,6 @@ void AWallActor::UpdateWall()
         }
     }
 
-    // Update segment properties
     for (int32 i = 0; i < NumberOfWallSegments; i++)
     {
         ArrayOfWallSegments[i]->SetStaticMesh(WallSegmentMesh);

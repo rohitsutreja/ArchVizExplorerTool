@@ -31,13 +31,17 @@ void AHouseComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if(EndPlayReason == EEndPlayReason::Type::Destroyed)
 	{
-		TArray<USceneComponent*> ChildActors;
+		TArray<USceneComponent*> ChildComponents;
 
-		RootComponent->GetChildrenComponents(true, ChildActors);
+		RootComponent->GetChildrenComponents(true, ChildComponents);
 
-		for (auto& ChildActor : ChildActors)
+		for (auto& ChildActor : ChildComponents)
 		{
-			ChildActor->GetAttachParentActor()->Destroy();
+			if(IsValid(ChildActor->GetAttachParentActor()))
+			{
+				ChildActor->GetAttachParentActor()->Destroy();
+			}
+			
 		}
 	}
 

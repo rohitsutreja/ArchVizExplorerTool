@@ -34,7 +34,6 @@ void UHouseConstructionManager::SetUp()
 		HouseConstructionUI->FloorButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectFloor);
 		HouseConstructionUI->DoorButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectDoor);
 		HouseConstructionUI->WindowButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectWindow);
-
 	}
 }
 
@@ -53,16 +52,16 @@ void UHouseConstructionManager::End()
 	}
 }
 
+
+
 void UHouseConstructionManager::CreateAndSelectWall()
 {
-
 	if (IsCurrentActorMoving())
 	{
 		bIsMovingWithCursor = false;
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
 	}
-
 
 	DeselectCurrentActor();
 
@@ -288,7 +287,6 @@ void UHouseConstructionManager::OnLeftClick()
 			{
 				SelectedActor->ShowPropertyPanel();
 			}
-
 		}
 		else
 		{
