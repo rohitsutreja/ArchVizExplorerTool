@@ -10,14 +10,14 @@ void UInteriorDesignWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	BedButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnBedButtonClicked);
-	ChairButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnChairButtonClicked);
-	LightButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnLightButtonClicked);
-	TableButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnTableButtonClicked);
-	PictureButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnPictureButtonClicked);
-	StairButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnStairButtonClicked);
-	BathroomButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnBathroomButtonClicked);
-	OtherItemsButton->OnClicked.AddDynamic(this, &UInteriorDesignWidget::OnOtherItemsButtonClicked);
+	BedButton->OnClicked.AddUniqueDynamic(this, &UInteriorDesignWidget::OnBedButtonClicked);
+	ChairButton->OnClicked.AddUniqueDynamic(this, &UInteriorDesignWidget::OnChairButtonClicked);
+	LightButton->OnClicked.AddUniqueDynamic(this, &UInteriorDesignWidget::OnLightButtonClicked);
+	TableButton->OnClicked.AddUniqueDynamic(this, &UInteriorDesignWidget::OnTableButtonClicked);
+	PictureButton->OnClicked.AddUniqueDynamic(this, &UInteriorDesignWidget::OnPictureButtonClicked);
+	StairButton->OnClicked.AddUniqueDynamic(this, &UInteriorDesignWidget::OnStairButtonClicked);
+	BathroomButton->OnClicked.AddUniqueDynamic(this, &UInteriorDesignWidget::OnBathroomButtonClicked);
+	OtherItemsButton->OnClicked.AddUniqueDynamic(this, &UInteriorDesignWidget::OnOtherItemsButtonClicked);
 
 }
 

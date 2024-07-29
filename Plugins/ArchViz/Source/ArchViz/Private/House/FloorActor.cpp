@@ -117,22 +117,20 @@ void AFloorActor::GenerateFloor()
     TArray<FVector> PlaneNormals;
     TArray<FVector2D> PlaneUVs;
 
-    // Top Plane Vertices (same as top face of the cube)
+   
     PlaneVertices.Add(FVector(0, Dimensions.Y, Dimensions.Z + 1));
     PlaneVertices.Add(FVector(0, 0, Dimensions.Z + 1));
     PlaneVertices.Add(FVector(Dimensions.X, 0, Dimensions.Z + 1));
     PlaneVertices.Add(FVector(Dimensions.X, Dimensions.Y, Dimensions.Z +1));
 
-    // Top Plane Triangles
+
     PlaneTriangles.Append({ 0, 2,1 , 0, 3,2});
 
-    // Top Plane Normals (pointing up)
     for (int32 i = 0; i < 4; i++)
     {
         PlaneNormals.Add(FVector(0, 0, 1));
     }
 
-    // UV Mapping for the top plane
     PlaneUVs.Add(FVector2D(0, 1));
     PlaneUVs.Add(FVector2D(0, 0));
     PlaneUVs.Add(FVector2D(1, 0));
@@ -197,12 +195,12 @@ void AFloorActor::BeginPlay()
 
         PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Floor")));
 
-        PropertyPanelUI->FloorLength->OnValueChanged.AddDynamic(this, &AFloorActor::OnDimensionsChange);
-        PropertyPanelUI->FloorWidth->OnValueChanged.AddDynamic(this, &AFloorActor::OnDimensionsChange);
-        PropertyPanelUI->FloorHeight->OnValueChanged.AddDynamic(this, &AFloorActor::OnDimensionsChange);
+        PropertyPanelUI->FloorLength->OnValueChanged.AddUniqueDynamic(this, &AFloorActor::OnDimensionsChange);
+        PropertyPanelUI->FloorWidth->OnValueChanged.AddUniqueDynamic(this, &AFloorActor::OnDimensionsChange);
+        PropertyPanelUI->FloorHeight->OnValueChanged.AddUniqueDynamic(this, &AFloorActor::OnDimensionsChange);
 
-        PropertyPanelUI->FloorMaterialList->OnMaterialChange.AddDynamic(this, &AFloorActor::OnFloorMaterialChange);
-        PropertyPanelUI->CeilingMaterialList->OnMaterialChange.AddDynamic(this, &AFloorActor::OnCeilingMaterialChange);
+        PropertyPanelUI->FloorMaterialList->OnMaterialChange.AddUniqueDynamic(this, &AFloorActor::OnFloorMaterialChange);
+        PropertyPanelUI->CeilingMaterialList->OnMaterialChange.AddUniqueDynamic(this, &AFloorActor::OnCeilingMaterialChange);
 
     }
 }
@@ -218,15 +216,42 @@ void AFloorActor::UnHighLightBorder()
     ProcMesh->SetRenderCustomDepth(false);
 }
 
+void AFloorActor::SyncProperties()
+{
+    SynchronizePropertyPanel();
+}
+
 void AFloorActor::SynchronizePropertyPanel()
 {
     if(PropertyPanelUI)
     {
-        PropertyPanelUI->FloorLength->SetValue(Dimensions.X);
-        PropertyPanelUI->FloorWidth->SetValue(Dimensions.Y);
-        PropertyPanelUI->FloorHeight->SetValue(Dimensions.Z);
+        PropertyPanelUI->FloorLength->SetValue(OldDimensions.X);
+        PropertyPanelUI->FloorWidth->SetValue(OldDimensions.Y);
+        PropertyPanelUI->FloorHeight->SetValue(OldDimensions.Z);
     }
 }
+
+void AFloorActor::AdjustOffset() {
+    double XDistance = EndPoint.X - GetActorLocation().X;
+    double YDistance = EndPoint.Y - GetActorLocation().Y;
+
+    if (XDistance >= 0.0 && YDistance >= 0.0) {
+        SetActorRotation({ 0,0,0 });
+    }
+    else if (XDistance >= 0.0 && YDistance < 0.0) {
+        SetActorRotation({ 0,270,0 });
+        std::swap(Dimensions.Y, Dimensions.X);
+      
+    }
+    else if (XDistance < 0.0 && YDistance >= 0.0) {
+        SetActorRotation({ 0,90,0 });
+        std::swap(Dimensions.Y, Dimensions.X);
+    }
+    else {
+        SetActorRotation({ 0,180,0 });
+    }
+}
+
 
 void AFloorActor::OnFloorMaterialChange(FMaterialInfo MaterialInfo)
 {
@@ -268,12 +293,16 @@ UMaterialInterface* AFloorActor::GetTopMaterial() const
 }
 
 
+
 // Setters
 
 void AFloorActor::SetDimensions(const FVector& InDimensions)
 {
     Dimensions = InDimensions;
+    OldDimensions = Dimensions;
 }
+
+
 
 void AFloorActor::SetBottomMaterial(UMaterialInterface* InMaterial)
 {

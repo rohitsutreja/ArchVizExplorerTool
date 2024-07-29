@@ -27,7 +27,7 @@ void AArchActor::BeginPlay()
 
 	if (IsValid(PropertyPanelUI))
 	{
-		PropertyPanelUI->DeleteWallButton->OnClicked.AddDynamic(this, &AHouseComponent::OnDeleteButtonClicked);
+		PropertyPanelUI->DeleteWallButton->OnClicked.AddUniqueDynamic(this, &AHouseComponent::OnDeleteButtonClicked);
 	}
 
 }
@@ -63,8 +63,23 @@ int32 AArchActor::GetId()
 	return ID;
 }
 
+void AArchActor::SyncProperties()
+{
+
+}
+
 void AArchActor::OnDeleteButtonClicked()
 {
 	Destroy();
 }
 
+FVector AArchActor::GetSnappedLocation(const FVector& Location, FVector GridSize)
+{
+	FVector SnappedLoc;
+
+	SnappedLoc.X = FMath::RoundToFloat(Location.X / GridSize.X) * GridSize.X;
+	SnappedLoc.Y = FMath::RoundToFloat(Location.Y / GridSize.Y) * GridSize.Y;
+	SnappedLoc.Z = FMath::RoundToFloat(Location.Z / GridSize.Z) * GridSize.Z;
+
+	return SnappedLoc;
+}

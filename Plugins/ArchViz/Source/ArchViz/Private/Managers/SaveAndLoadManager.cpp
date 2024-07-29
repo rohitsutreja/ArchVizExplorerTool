@@ -128,12 +128,12 @@ void USaveAndLoadManager::SetUp()
 
 	if(IsValid(SaveAndLoadUI))
 	{
-		SaveAndLoadUI->LoadProjectButton->OnClicked.AddDynamic(this, &USaveAndLoadManager::OnLoadProjectsButtonClicked);
-		SaveAndLoadUI->NewProjectButton->OnClicked.AddDynamic(this, &USaveAndLoadManager::OnNewProjectButtonClicked);
-		SaveAndLoadUI->SaveButton->OnClicked.AddDynamic(this, &USaveAndLoadManager::OnSaveProjectButtonClicked);
-		SaveAndLoadUI->CloseButton->OnClicked.AddDynamic(this, &USaveAndLoadManager::OnCloseButtonClicked);
-		SaveAndLoadUI->OnSlotSelectButtonClicked.AddDynamic(this, &USaveAndLoadManager::OnSlotSelectButtonClicked);
-		SaveAndLoadUI->OnSlotDeleteButtonClicked.AddDynamic(this, &USaveAndLoadManager::OnSlotDeleteButtonClicked);
+		SaveAndLoadUI->LoadProjectButton->OnClicked.AddUniqueDynamic(this, &USaveAndLoadManager::OnLoadProjectsButtonClicked);
+		SaveAndLoadUI->NewProjectButton->OnClicked.AddUniqueDynamic(this, &USaveAndLoadManager::OnNewProjectButtonClicked);
+		SaveAndLoadUI->SaveButton->OnClicked.AddUniqueDynamic(this, &USaveAndLoadManager::OnSaveProjectButtonClicked);
+		SaveAndLoadUI->CloseButton->OnClicked.AddUniqueDynamic(this, &USaveAndLoadManager::OnCloseButtonClicked);
+		SaveAndLoadUI->OnSlotSelectButtonClicked.AddUniqueDynamic(this, &USaveAndLoadManager::OnSlotSelectButtonClicked);
+		SaveAndLoadUI->OnSlotDeleteButtonClicked.AddUniqueDynamic(this, &USaveAndLoadManager::OnSlotDeleteButtonClicked);
 
 	}
    

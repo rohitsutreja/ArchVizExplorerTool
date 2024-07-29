@@ -66,11 +66,11 @@ void UHouseTemplateManager::SetUp()
 
 	if(IsValid(HouseTemplateUI))
 	{
-		HouseTemplateUI->FirstHouseButton->OnClicked.AddDynamic(this, &UHouseTemplateManager::CreateAndSelectFirstHouseTemplate);
-		HouseTemplateUI->SecondHouseButton->OnClicked.AddDynamic(this, &UHouseTemplateManager::CreateAndSelectSecondHouseTemplate);
-		HouseTemplateUI->ThirdHouseButton->OnClicked.AddDynamic(this, &UHouseTemplateManager::CreateAndSelectThirdHouseTemplate);
+		HouseTemplateUI->FirstHouseButton->OnClicked.AddUniqueDynamic(this, &UHouseTemplateManager::CreateAndSelectFirstHouseTemplate);
+		HouseTemplateUI->SecondHouseButton->OnClicked.AddUniqueDynamic(this, &UHouseTemplateManager::CreateAndSelectSecondHouseTemplate);
+		HouseTemplateUI->ThirdHouseButton->OnClicked.AddUniqueDynamic(this, &UHouseTemplateManager::CreateAndSelectThirdHouseTemplate);
 
-		HouseTemplateUI->SaveButton->OnClicked.AddDynamic(this, &UHouseTemplateManager::OnSaveButtonClicked);
+		HouseTemplateUI->SaveButton->OnClicked.AddUniqueDynamic(this, &UHouseTemplateManager::OnSaveButtonClicked);
 
 		HouseTemplateUI->HidePanel();
 	}

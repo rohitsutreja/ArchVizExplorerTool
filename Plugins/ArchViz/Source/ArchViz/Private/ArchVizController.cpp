@@ -5,6 +5,7 @@
 #include "InputMappingContext.h"
 #include "Components/Border.h"
 #include "Components/Button.h"
+#include "House/WallActor.h"
 #include "Managers/HouseConstructionManager.h"
 #include "Managers/HouseTemplateManager.h"
 #include "Managers/InteriorDesignManager.h"
@@ -31,6 +32,19 @@ void AArchVizController::Tick(float DeltaSeconds)
     if (HouseConstructionManager->IsCurrentActorMoving())
     {
         HouseConstructionManager->UpdateActorPlacement();
+        return;
+    }
+
+    if (HouseConstructionManager->bIsWallExpanding && IsValid(HouseConstructionManager->SelectedActor))
+    {
+        HouseConstructionManager->HandleWallDragging();
+        return;
+    }
+
+    if (HouseConstructionManager->bIsFloorExpanding && IsValid(HouseConstructionManager->SelectedActor))
+    {
+        HouseConstructionManager->HandleFloorDragging();
+        return;
     }
 
     if (InteriorDesignManager->IsCurrentActorMoving())
@@ -48,12 +62,12 @@ void AArchVizController::BeginPlay()
 
     if (IsValid(MainUI))
     {
-        MainUI->RoadButton->OnClicked.AddDynamic(this, &AArchVizController::InitRoadConstructionMode);
-        MainUI->HouseButton->OnClicked.AddDynamic(this, &AArchVizController::InitHouseConstructionMode);
-        MainUI->InteriorButton->OnClicked.AddDynamic(this, &AArchVizController::InitInteriorDesignMode);
-        MainUI->SaveButton->OnClicked.AddDynamic(this, &AArchVizController::InitSaveMode);
-        MainUI->MenuButton->OnClicked.AddDynamic(this, &AArchVizController::InitLoadMode);
-        MainUI->TemplateButton->OnClicked.AddDynamic(this, &AArchVizController::InitHouseTemplateMode);
+        MainUI->RoadButton->OnClicked.AddUniqueDynamic(this, &AArchVizController::InitRoadConstructionMode);
+        MainUI->HouseButton->OnClicked.AddUniqueDynamic(this, &AArchVizController::InitHouseConstructionMode);
+        MainUI->InteriorButton->OnClicked.AddUniqueDynamic(this, &AArchVizController::InitInteriorDesignMode);
+        MainUI->SaveButton->OnClicked.AddUniqueDynamic(this, &AArchVizController::InitSaveMode);
+        MainUI->MenuButton->OnClicked.AddUniqueDynamic(this, &AArchVizController::InitLoadMode);
+        MainUI->TemplateButton->OnClicked.AddUniqueDynamic(this, &AArchVizController::InitHouseTemplateMode);
 
         MainUI->AddToViewport(1);
     }

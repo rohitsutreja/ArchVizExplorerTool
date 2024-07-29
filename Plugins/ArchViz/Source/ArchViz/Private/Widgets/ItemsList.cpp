@@ -24,7 +24,7 @@ void UItemsList::PopulateItemsList()
 		if (UItemWidget* EntryWidget = CreateWidget<UItemWidget>(this, ItemWidgetClass))
 		{
 			EntryWidget->SetItemInfo(ItemInfo);
-			EntryWidget->OnItemEntryClicked.AddDynamic(this, &UItemsList::HandleItemClicked);
+			EntryWidget->OnItemEntryClicked.AddUniqueDynamic(this, &UItemsList::HandleItemClicked);
 			ItemScrollBox->AddChild(EntryWidget);
 		}
 	}

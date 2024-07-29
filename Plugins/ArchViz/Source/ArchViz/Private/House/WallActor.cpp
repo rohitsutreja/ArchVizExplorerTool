@@ -30,8 +30,8 @@ void AWallActor::BeginPlay()
     {
         PropertyPanelUI->SwitchToWidget(0);
         PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Wall")));
-        PropertyPanelUI->WallLengthValue->OnValueChanged.AddDynamic(this, &AWallActor::OnLengthChange);
-        PropertyPanelUI->WallMaterialList->OnMaterialChange.AddDynamic(this, &AWallActor::OnMaterialChange);
+        PropertyPanelUI->WallLengthValue->OnValueChanged.AddUniqueDynamic(this, &AWallActor::OnLengthChange);
+        PropertyPanelUI->WallMaterialList->OnMaterialChange.AddUniqueDynamic(this, &AWallActor::OnMaterialChange);
     }
 
     UpdateWall();
@@ -255,8 +255,6 @@ void AWallActor::AddDoorAtIndex(int32 Idx, ADoorActor* Door)
 void AWallActor::AttachWindowAtIndex(int32 Idx, AWindowActor* Window)
 {
     IndexToWindowMapping.Add({ Idx, Window });
-
-
 }
 
 bool AWallActor::AttachWindowToComponent(UStaticMeshComponent* Component, AWindowActor* Window)
@@ -322,8 +320,6 @@ void AWallActor::AddWindowAtIndex(int32 Idx, AWindowActor* Window)
 void AWallActor::SetMaterial(UMaterialInterface* InMaterial)
 {
     Material = InMaterial;
-
-  
 }
 
 void AWallActor::SynchronizePropertyPanel()
@@ -332,6 +328,11 @@ void AWallActor::SynchronizePropertyPanel()
     {
         PropertyPanelUI->WallLengthValue->SetValue(NumberOfWallSegments * LengthOfSegment);
     }
+}
+
+void AWallActor::SyncProperties()
+{
+    SynchronizePropertyPanel();
 }
 
 // Getters
@@ -407,6 +408,11 @@ void AWallActor::SetIndexToDoorMapping(const TMap<int32, ADoorActor*>& InIndexTo
 
 void AWallActor::SetLength(float Length)
 {
-    LengthOfSegment = Length;
-    UpdateWall();
+	if(auto NewNumberOfWallSegments = FMath::Max(FMath::Floor(Length / LengthOfSegment),1); NewNumberOfWallSegments != NumberOfWallSegments)
+    {
+        NumberOfWallSegments = NewNumberOfWallSegments;
+        UpdateWall();
+    }
+    
+
 }

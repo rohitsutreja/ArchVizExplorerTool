@@ -38,6 +38,8 @@ public:
 	UFUNCTION()
 	virtual void OnDeleteButtonClicked();
 
+	static FVector GetSnappedLocation(const FVector& Location, FVector GridSize);
+
 	void ShowPropertyPanel();
 	void HidePropertyPanel();
 
@@ -45,6 +47,8 @@ public:
 
 	virtual void HighLightBorder() PURE_VIRTUAL(AArchActor::HighLightBorder, );
 	virtual void UnHighLightBorder() PURE_VIRTUAL(AArchActor::HighLightBorder, );
+
+	virtual void SyncProperties();
 
 
 private:

@@ -4,6 +4,7 @@
 #include "Managers/HouseConstructionManager.h"
 
 #include "ArchVizController.h"
+#include "VectorTypes.h"
 #include "Components/Button.h"
 #include "House/DoorActor.h"
 #include "Widgets/HouseConstructionWidget.h"
@@ -30,10 +31,10 @@ void UHouseConstructionManager::SetUp()
 
 	if (IsValid(HouseConstructionUI))
 	{
-		HouseConstructionUI->WallButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectWall);
-		HouseConstructionUI->FloorButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectFloor);
-		HouseConstructionUI->DoorButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectDoor);
-		HouseConstructionUI->WindowButton->OnClicked.AddDynamic(this, &UHouseConstructionManager::CreateAndSelectWindow);
+		HouseConstructionUI->WallButton->OnClicked.AddUniqueDynamic(this, &UHouseConstructionManager::CreateAndSelectWall);
+		HouseConstructionUI->FloorButton->OnClicked.AddUniqueDynamic(this, &UHouseConstructionManager::CreateAndSelectFloor);
+		HouseConstructionUI->DoorButton->OnClicked.AddUniqueDynamic(this, &UHouseConstructionManager::CreateAndSelectDoor);
+		HouseConstructionUI->WindowButton->OnClicked.AddUniqueDynamic(this, &UHouseConstructionManager::CreateAndSelectWindow);
 	}
 }
 
@@ -76,7 +77,9 @@ void UHouseConstructionManager::CreateAndSelectWall()
 
 	Controller->Notify(TEXT("Wall Created. Click to Place on Desired Location."));
 
-	bIsMovingWithCursor = true;
+	bIsNewActor = true;
+
+	StartActorPlacement();
 }
 
 void UHouseConstructionManager::CreateAndSelectFloor() {
@@ -102,7 +105,10 @@ void UHouseConstructionManager::CreateAndSelectFloor() {
 
 	SelectedActor->HighLightBorder();
 
+	bIsNewActor = true;
+
 	StartActorPlacement();
+
 }
 
 void UHouseConstructionManager::CreateAndSelectDoor()
@@ -120,6 +126,8 @@ void UHouseConstructionManager::CreateAndSelectDoor()
 	SelectedActor = GetWorld()->SpawnActor<AHouseComponent>(DoorClass, FVector{ 0, 0, 0 },
 		FRotator{ 0, 0, 0 },
 		SpawnParams);
+
+	bIsWallExpanding = false;
 
 	Controller->Notify(TEXT("Door Created. Click on Wall to Place it."));
 
@@ -154,6 +162,7 @@ void UHouseConstructionManager::CreateAndSelectWindow()
 
 void UHouseConstructionManager::SelectHouseComponentActorUnderCursor()
 {
+	
 	AActor* ActorUnderCursor = Controller->GetActorUnderCursor({});
 
 
@@ -185,16 +194,18 @@ void UHouseConstructionManager::DeselectCurrentActor()
 		}
 	}
 
+
+	bIsNewActor = false;
+	bIsFloorExpanding = false;
+	bIsWallExpanding = false;
+
 	SelectedActor = nullptr;
-
-
 };
 
 void UHouseConstructionManager::StartActorPlacement()
 {
 	if (IsValid(SelectedActor))
 	{
-
 		SelectedActor->HidePropertyPanel();
 
 		if (auto Door = Cast<ADoorActor>(SelectedActor))
@@ -248,7 +259,6 @@ void UHouseConstructionManager::EndActorPlacement()
 		}
 	}
 
-
 	bIsMovingWithCursor = false;
 };
 
@@ -258,14 +268,46 @@ void UHouseConstructionManager::UpdateActorPlacement()
 	{
 		const FHitResult HitResult = Controller->GetHitResult({ SelectedActor });
 
+		if(bIsNewActor && (SelectedActor->IsA(AWallActor::StaticClass()) || SelectedActor->IsA(AFloorActor::StaticClass())))
+		{
+			auto Rotation = Controller->PlayerCameraManager->GetCameraRotation();
+
+			auto WallRot = SelectedActor->GetActorRotation();
+
+
+			if((Rotation.Yaw >=0 && Rotation.Yaw < 45) || (Rotation.Yaw >= 315 && Rotation.Yaw < 360))
+			{
+				SelectedActor->SetActorRotation(FRotator(0,90,0));
+			}
+			else if(Rotation.Yaw >= 45 && Rotation.Yaw < 135)
+			{
+				SelectedActor->SetActorRotation(FRotator(0, 180, 0));
+
+			}
+			else if(Rotation.Yaw >= 135 && Rotation.Yaw < 225)
+			{
+				SelectedActor->SetActorRotation(FRotator(0, -90, 0));
+
+			}
+			else
+			{
+				SelectedActor->SetActorRotation(FRotator(0, 0, 0));
+			}
+			
+		}
+
 		SelectedActor->SetActorLocation(HitResult.Location);
 		SelectedActor->SnapActorToGrid(FVector{ 20 });
 	}
 }
 
+
 void UHouseConstructionManager::DestroySelectedActor()
 {
+	bIsNewActor = false;
 	bIsMovingWithCursor = false;
+	bIsWallExpanding = false;
+	bIsFloorExpanding = false;
 	SelectedActor->Destroy();
 	SelectedActor = nullptr;
 }
@@ -279,13 +321,58 @@ void UHouseConstructionManager::OnLeftClick()
 {
 	if (IsValid(SelectedActor))
 	{
+
+		if (SelectedActor->IsA(AWallActor::StaticClass()))
+		{
+			if(!IsCurrentActorMoving() && bIsWallExpanding)
+			{
+				if (bIsNewActor)
+				{
+					SelectedActor->SyncProperties();
+					bIsNewActor = false;
+				}
+				bIsWallExpanding = false;
+				return;
+			}
+		}
+
+		if (auto Floor = Cast<AFloorActor>(SelectedActor))
+		{
+			if (!IsCurrentActorMoving() && bIsFloorExpanding)
+			{
+				if (bIsNewActor)
+				{
+					Floor->OldDimensions = Floor->GetDimensions();
+					SelectedActor->SyncProperties();
+					bIsNewActor = false;
+				}
+				bIsFloorExpanding = false;
+
+				return;
+			}
+		}
+
 		if (IsCurrentActorMoving())
 		{
 			EndActorPlacement();
 
+			if(SelectedActor->IsA(AWallActor::StaticClass()) && bIsNewActor)
+			{
+				bIsWallExpanding = true;
+				Controller->Notify(TEXT("Drag Your Mouse To Extend the Wall."));
+
+			}
+
+			if (SelectedActor->IsA(AFloorActor::StaticClass()) && bIsNewActor)
+			{
+				bIsFloorExpanding = true;
+				Controller->Notify(TEXT("Drag Your Mouse To Extend the Floor."));
+
+			}
+
 			if (IsValid(SelectedActor->PropertyPanelUI))
 			{
-				SelectedActor->ShowPropertyPanel();
+				 SelectedActor->ShowPropertyPanel();
 			}
 		}
 		else
@@ -303,6 +390,86 @@ void UHouseConstructionManager::OnLeftClick()
 		SelectHouseComponentActorUnderCursor();
 	}
 };
+
+
+void UHouseConstructionManager::HandleFloorDragging()
+{
+	if (auto Floor = Cast<AFloorActor>(SelectedActor))
+	{
+		if (bIsFloorExpanding && bIsNewActor)
+		{
+			FVector StartPoint = Floor->GetActorLocation();
+
+			FHitResult HitResult = Controller->GetHitResult({ SelectedActor });
+		
+			HitResult.Location = AArchActor::GetSnappedLocation(HitResult.Location, FVector{20});
+
+			if (Floor->EndPoint == HitResult.Location) {
+				return;
+			}
+
+			Floor->EndPoint = HitResult.Location;
+
+			double EdgeOffset{ 10.0f };
+
+			double XDistance = Floor->EndPoint.X - StartPoint.X;
+			double YDistance = Floor->EndPoint.Y - StartPoint.Y;
+			double ZDistance = 20.0;
+
+			auto Dimensions = FVector{ abs(XDistance) + (2 * EdgeOffset), abs(YDistance) + (2 * EdgeOffset), ZDistance };
+
+		/*	Dimensions.X = static_cast<int32>(Dimensions.X) / 200 * 200 + 20;
+			Dimensions.Y = static_cast<int32>(Dimensions.Y) / 200 * 200 + 20;*/
+
+			Floor->SetDimensions(Dimensions);
+
+			Floor->AdjustOffset();
+
+			Floor->GenerateFloor();
+		}
+	}
+}
+void UHouseConstructionManager::HandleWallDragging()
+{
+	if (auto Wall = Cast<AWallActor>(SelectedActor))
+	{
+		if (bIsWallExpanding && bIsNewActor)
+		{
+			FVector StartPoint = Wall->GetActorLocation();
+
+			const FHitResult HitResult = Controller->GetHitResult({ SelectedActor });
+
+			auto HitLocation = HitResult.Location;
+
+			auto XDiff = HitLocation.X - StartPoint.X;
+			auto YDiff = HitLocation.Y - StartPoint.Y;
+
+			if (abs(XDiff) >= abs(YDiff)) {
+
+				Wall->SetLength(abs(XDiff));
+
+				if (XDiff >= 0) {
+					Wall->SetActorRotation(FRotator{ 0.0 });
+				}
+				else {
+					Wall->SetActorRotation(FRotator{ 0.0, 180.0, 0.0 });
+				}
+			}
+			else {
+
+				Wall->SetLength(abs(YDiff));
+
+				if (YDiff >= 0) {
+					Wall->SetActorRotation(FRotator{ 0.0, 90.0, 0.0 });
+				}
+				else {
+					Wall->SetActorRotation(FRotator{ 0.0, -90, 0.0 });
+				}
+			}
+		}
+	}
+	
+}
 
 
 void UHouseConstructionManager::OnRKeyDown()

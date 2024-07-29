@@ -29,17 +29,21 @@ public:
     virtual void HighLightBorder() override;
     virtual void UnHighLightBorder() override;
 
+    void SyncProperties() override;
     void SynchronizePropertyPanel();
+    void AdjustOffset();
 
 
     // Getters
     const FVector& GetDimensions() const;
     UMaterialInterface* GetBottomMaterial() const;
     UMaterialInterface* GetTopMaterial() const;
+    const FVector& GetOffset() const;
 
 
     // Setters
     void SetDimensions(const FVector& InDimensions);
+    void SetOffset(const FVector& InOffset);
     void SetBottomMaterial(UMaterialInterface* InMaterial);
     void SetTopMaterial(UMaterialInterface* InMaterial);
 
@@ -53,9 +57,14 @@ public:
     UFUNCTION()
     void OnDimensionsChange(float X);
 
+    FVector OldDimensions;
+    FVector EndPoint{0};
+
 private:
     UPROPERTY(EditAnywhere)
     FVector Dimensions;
+
+ 
 
     UPROPERTY()
     UProceduralMeshComponent* ProcMesh;

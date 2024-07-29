@@ -15,6 +15,7 @@ class UHouseConstructionWidget;
 /**
  * 
  */
+
 UCLASS(Blueprintable)
 class ARCHVIZ_API UHouseConstructionManager : public UArchVizManager
 {
@@ -43,7 +44,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AWindowActor> WindowClass;
 
+
+	bool bIsNewActor = false;
+
 	bool bIsMovingWithCursor = false;
+
+	bool bIsWallExpanding = false;
+
+	bool bIsFloorExpanding = false;
 
 
 	virtual void Start() override;
@@ -76,6 +84,8 @@ public:
 
 
 	void OnLeftClick();
+	void HandleFloorDragging();
+	void HandleWallDragging();
 	void OnRKeyDown();
 	void OnMKeyDown();
 };

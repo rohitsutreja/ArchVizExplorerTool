@@ -35,10 +35,10 @@ void ADoorActor::BeginPlay()
         PropertyPanelUI->SwitchToWidget(2);
         PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Door")));
 
-        PropertyPanelUI->DoorOpenCloseButton->OnClicked.AddDynamic(this, &ADoorActor::OnToggleDoor);
+        PropertyPanelUI->DoorOpenCloseButton->OnClicked.AddUniqueDynamic(this, &ADoorActor::OnToggleDoor);
 
-        PropertyPanelUI->DoorMaterialList->OnMaterialChange.AddDynamic(this, &ADoorActor::OnDoorMaterialChange);
-        PropertyPanelUI->DoorFrameMaterialList->OnMaterialChange.AddDynamic(this, &ADoorActor::OnDoorFrameMaterialChange);
+        PropertyPanelUI->DoorMaterialList->OnMaterialChange.AddUniqueDynamic(this, &ADoorActor::OnDoorMaterialChange);
+        PropertyPanelUI->DoorFrameMaterialList->OnMaterialChange.AddUniqueDynamic(this, &ADoorActor::OnDoorFrameMaterialChange);
     }
 
     SetActorRotation(FRotator(0, 90, 0)); 

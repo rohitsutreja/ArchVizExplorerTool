@@ -202,11 +202,11 @@ void ARoadSplineActor::BeginPlay()
 
 		PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Road")));
 
-		PropertyPanelUI->RoadWidthValue->OnValueChanged.AddDynamic(this, &ARoadSplineActor::OnWidthChanged);
+		PropertyPanelUI->RoadWidthValue->OnValueChanged.AddUniqueDynamic(this, &ARoadSplineActor::OnWidthChanged);
 
-		PropertyPanelUI->RoadType->OnSelectionChanged.AddDynamic(this, &ARoadSplineActor::OnRoadTypeChanged);
+		PropertyPanelUI->RoadType->OnSelectionChanged.AddUniqueDynamic(this, &ARoadSplineActor::OnRoadTypeChanged);
 
-		PropertyPanelUI->RoadMaterialList->OnMaterialChange.AddDynamic(this, &ARoadSplineActor::OnMaterialChange);
+		PropertyPanelUI->RoadMaterialList->OnMaterialChange.AddUniqueDynamic(this, &ARoadSplineActor::OnMaterialChange);
 	}
 }
 

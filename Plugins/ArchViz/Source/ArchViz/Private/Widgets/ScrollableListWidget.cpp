@@ -68,7 +68,7 @@ void UScrollableListWidget::PopulateMaterialList()
 		if (UMaterialItemWidget* EntryWidget = CreateWidget<UMaterialItemWidget>(this, MaterialItemClass))
 		{
 			EntryWidget->SetMaterialInfo(MaterialInfo);
-			EntryWidget->OnMaterialEntryClicked.AddDynamic(this, &UScrollableListWidget::HandleMaterialItemClicked);
+			EntryWidget->OnMaterialEntryClicked.AddUniqueDynamic(this, &UScrollableListWidget::HandleMaterialItemClicked);
 			MaterialScrollBox->AddChild(EntryWidget);
 		}
 	}

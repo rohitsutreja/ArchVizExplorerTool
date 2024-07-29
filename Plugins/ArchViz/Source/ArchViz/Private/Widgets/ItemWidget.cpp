@@ -27,7 +27,7 @@ void UItemWidget::NativeConstruct()
 
     if (ItemThumbnail)
     {
-        ItemButton->OnClicked.AddDynamic(this, &UItemWidget::HandleMaterialButtonClicked);
+        ItemButton->OnClicked.AddUniqueDynamic(this, &UItemWidget::HandleMaterialButtonClicked);
     }
 }
 

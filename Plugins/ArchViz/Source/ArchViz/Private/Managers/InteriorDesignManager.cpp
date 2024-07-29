@@ -20,7 +20,7 @@ void UInteriorDesignManager::SetUp()
 
 	if(IsValid(InteriorDesignUI))
 	{
-		InteriorDesignUI->MeshItemsScrollList->OnItemChange.AddDynamic(this, &UInteriorDesignManager::OnMeshItemClicked);
+		InteriorDesignUI->MeshItemsScrollList->OnItemChange.AddUniqueDynamic(this, &UInteriorDesignManager::OnMeshItemClicked);
 	}
 	
 }

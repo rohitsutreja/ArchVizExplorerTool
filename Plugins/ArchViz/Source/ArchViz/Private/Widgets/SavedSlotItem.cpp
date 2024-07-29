@@ -19,8 +19,8 @@ void USavedSlotItem::NativeConstruct()
 {
 	Super::NativeConstruct();
 	SlotName->SetText(FText::FromString(SaveSlotInfo));
-	SlotButton->OnClicked.AddDynamic(this, &USavedSlotItem::HandleSlotClick);
-	DeleteButton->OnClicked.AddDynamic(this, &USavedSlotItem::HandleSlotDeleteClick);
+	SlotButton->OnClicked.AddUniqueDynamic(this, &USavedSlotItem::HandleSlotClick);
+	DeleteButton->OnClicked.AddUniqueDynamic(this, &USavedSlotItem::HandleSlotDeleteClick);
 }
 
 void USavedSlotItem::SetSlotInfo(const FString& InSlotInfo)

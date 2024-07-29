@@ -11,9 +11,6 @@
 
 class ADoorActor;
 
-/**
- * AWallActor class that represents a wall actor in the game.
- */
 
 
 UCLASS()
@@ -48,6 +45,7 @@ public:
     void SetMaterial(UMaterialInterface* InMaterial);
 
     void SynchronizePropertyPanel();
+    virtual void SyncProperties() override;
 
     // Getters
     int32 GetNumberOfWallSegments() const;

@@ -38,7 +38,7 @@ void AWindowActor::BeginPlay()
     {
         PropertyPanelUI->SwitchToWidget(5);
         PropertyPanelUI->Title->SetText(FText::FromString(TEXT("Window")));
-        PropertyPanelUI->WindowMaterialList->OnMaterialChange.AddDynamic(this, &AWindowActor::OnMaterialChange);
+        PropertyPanelUI->WindowMaterialList->OnMaterialChange.AddUniqueDynamic(this, &AWindowActor::OnMaterialChange);
 
     }
 

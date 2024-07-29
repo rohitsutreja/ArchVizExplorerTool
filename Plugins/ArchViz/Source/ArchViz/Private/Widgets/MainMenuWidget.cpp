@@ -37,8 +37,8 @@ void UMainMenuWidget::PopulateSlotsList(const TArray<FString>& SlotList)
 		for (auto& SlotItem : SlotList)
 		{
 			auto SlotButton = CreateWidget<USavedSlotItem>(this, SlotItemClass);
-			SlotButton->OnSlotSelect.AddDynamic(this, &UMainMenuWidget::HandleSlotSelectButtonClicked);
-			SlotButton->OnSlotDelete.AddDynamic(this, &UMainMenuWidget::HandleSlotDeleteButtonClicked);
+			SlotButton->OnSlotSelect.AddUniqueDynamic(this, &UMainMenuWidget::HandleSlotSelectButtonClicked);
+			SlotButton->OnSlotDelete.AddUniqueDynamic(this, &UMainMenuWidget::HandleSlotDeleteButtonClicked);
 			SlotButton->SetSlotInfo(SlotItem);
 			SavedProjectList->AddChild(SlotButton);
 		}
