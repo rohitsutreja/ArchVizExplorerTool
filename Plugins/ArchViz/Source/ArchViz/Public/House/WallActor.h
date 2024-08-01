@@ -26,6 +26,8 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     void UpdateWall();
+    void GenerateLargeWallSegments();
+    void GenerateSmallWallSegments();
     void AttachActorToWallSegment(AActor* Actor, UStaticMeshComponent* WallSegment, const FName& SocketName);
 
     bool AttachDoorToComponent(UStaticMeshComponent* Component, ADoorActor* Door);
@@ -49,6 +51,7 @@ public:
 
     // Getters
     int32 GetNumberOfWallSegments() const;
+    int32 GetNumberOfSmallWallSegments() const;
     int32 GetLengthOfSegment() const;
     UStaticMesh* GetWallSegmentMesh() const;
     UStaticMesh* GetDoorHallSegment() const;
@@ -58,6 +61,7 @@ public:
 
     // Setters
     void SetNumberOfWallSegments(int32 InNumberOfWallSegments);
+    void SetNumberOfSmallWallSegments(int32 InNumberOfSmallWallSegments);
     void SetLengthOfSegment(int32 InLengthOfSegment);
     void SetWallSegmentMesh(UStaticMesh* InWallSegmentMesh);
     void SetDoorHallSegment(UStaticMesh* InDoorHallSegment);
@@ -81,6 +85,8 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
     int32 NumberOfWallSegments;
 
+    int32 NumberOfSmallWallSegments{0};
+
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
     int32 LengthOfSegment;
 
@@ -93,12 +99,19 @@ protected:
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
     UStaticMesh* WindowSegmentMesh;
 
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    UStaticMesh* SmallWallSegment;
+
+
 
     UPROPERTY()
     UMaterialInterface* Material;
 
     UPROPERTY()
     TArray<UStaticMeshComponent*> ArrayOfWallSegments;
+
+    UPROPERTY()
+    TArray<UStaticMeshComponent*> ArrayOfSmallWallSegments;
 
     UPROPERTY()
     TMap<int32, ADoorActor*> IndexToDoorMapping;

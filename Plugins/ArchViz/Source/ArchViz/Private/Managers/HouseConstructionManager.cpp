@@ -237,7 +237,7 @@ void UHouseConstructionManager::EndActorPlacement()
 			{
 				if(!Wall->AttachDoorToComponent(Cast<UStaticMeshComponent>(HitComponent), Door))
 				{
-					Controller->Notify(TEXT("There is already Window/Door Present at This Location."));
+					Controller->Notify(TEXT("Can Not Place Door at This Location."));
 					return;
 
 				};
@@ -246,7 +246,7 @@ void UHouseConstructionManager::EndActorPlacement()
 			{
 				if(!Wall->AttachWindowToComponent(Cast<UStaticMeshComponent>(HitComponent), Window))
 				{
-					Controller->Notify(TEXT("There is already Window/Door Present at This Location."));
+					Controller->Notify(TEXT("Can Not Place Window at This Location."));
 					return;
 				};
 			}

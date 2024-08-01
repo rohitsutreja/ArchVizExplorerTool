@@ -305,6 +305,7 @@ void USaveAndLoadManager::SaveGame(const FString& SlotName)
 		WallData.Transform = WallActor->GetActorTransform();
 		WallData.NumberOfWallSegments = WallActor->GetNumberOfWallSegments();
 		WallData.Material = WallActor->GetMaterial();
+		WallData.NumberOfSmallWallSegments = WallActor->GetNumberOfSmallWallSegments();
 
 		if (IsValid(WallActor->GetAttachParentActor()))
 		{
@@ -438,6 +439,7 @@ AHouseTemplate* USaveAndLoadManager::GetHouseTemplate(const FString& SlotName)
 		{
 			AWallActor* WallActor = GetWorld()->SpawnActor<AWallActor>(WallActorClass, WallData.Transform);
 			WallActor->SetNumberOfWallSegments(WallData.NumberOfWallSegments);
+			WallActor->SetNumberOfSmallWallSegments(0);
 			WallActor->SetMaterial(WallData.Material);
 			WallActor->UpdateWall();
 			WallActor->SynchronizePropertyPanel();
@@ -626,6 +628,7 @@ void USaveAndLoadManager::LoadGame(const FString& SlotName)
 			AWallActor* WallActor = GetWorld()->SpawnActor<AWallActor>(WallActorClass, WallData.Transform);
 			WallActor->SetNumberOfWallSegments(WallData.NumberOfWallSegments);
 			WallActor->SetMaterial(WallData.Material);
+			WallActor->SetNumberOfSmallWallSegments(WallData.NumberOfSmallWallSegments);
 			WallActor->UpdateWall();
 			WallActor->SynchronizePropertyPanel();
 			WallActor->UnHighLightBorder();

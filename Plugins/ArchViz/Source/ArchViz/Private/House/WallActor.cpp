@@ -50,6 +50,33 @@ void AWallActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AWallActor::UpdateWall()
 {
+    GenerateLargeWallSegments();
+
+    GenerateSmallWallSegments();
+
+    for (auto& [idx, Door] : IndexToDoorMapping)
+    {
+        if (idx < ArrayOfWallSegments.Num())
+        {
+            ArrayOfWallSegments[idx]->SetStaticMesh(DoorHallSegment);
+            AttachActorToWallSegment(Door, ArrayOfWallSegments[idx], "DoorSocket");
+        }
+    }
+
+    for (auto& [idx, Window] : IndexToWindowMapping)
+    {
+        if (idx < ArrayOfWallSegments.Num())
+        {
+            ArrayOfWallSegments[idx]->SetStaticMesh(WindowSegmentMesh);
+            AttachActorToWallSegment(Window, ArrayOfWallSegments[idx], "WindowSocket");
+        }
+    }
+
+    HighLightBorder();
+}
+
+void AWallActor::GenerateLargeWallSegments()
+{
     int32 CurrentNumSegments = ArrayOfWallSegments.Num();
 
     if (CurrentNumSegments > NumberOfWallSegments)
@@ -83,26 +110,49 @@ void AWallActor::UpdateWall()
             ArrayOfWallSegments[i]->SetMaterial(0, Material);
         }
     }
-
-    for (auto& [idx, Door] : IndexToDoorMapping)
+}
+void AWallActor::GenerateSmallWallSegments()
+{
+    if (NumberOfSmallWallSegments <= 0)
     {
-        if (idx < ArrayOfWallSegments.Num())
+        return;
+    }
+
+    int32 CurrentSmallWallSegments = ArrayOfSmallWallSegments.Num();
+
+    if (CurrentSmallWallSegments > NumberOfSmallWallSegments)
+    {
+        for (int32 i = NumberOfSmallWallSegments; i < CurrentSmallWallSegments; i++)
         {
-            ArrayOfWallSegments[idx]->SetStaticMesh(DoorHallSegment);
-            AttachActorToWallSegment(Door, ArrayOfWallSegments[idx], "DoorSocket");
+            if (ArrayOfSmallWallSegments[i])
+            {
+                ArrayOfSmallWallSegments[i]->DestroyComponent();
+            }
+        }
+        ArrayOfSmallWallSegments.SetNum(NumberOfSmallWallSegments);
+    }
+    else if (CurrentSmallWallSegments < NumberOfSmallWallSegments)
+    {
+        for (int32 i = CurrentSmallWallSegments; i < NumberOfSmallWallSegments; i++)
+        {
+            auto WallSegment = NewObject<UStaticMeshComponent>(this);
+            WallSegment->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+            WallSegment->RegisterComponent();
+            ArrayOfSmallWallSegments.Add(WallSegment);
         }
     }
 
-    for (auto& [idx, Window] : IndexToWindowMapping)
+    int32 Offset = (NumberOfWallSegments)*LengthOfSegment;
+
+    for (int32 i = 0; i < NumberOfSmallWallSegments; i++)
     {
-        if (idx < ArrayOfWallSegments.Num())
+        ArrayOfSmallWallSegments[i]->SetStaticMesh(SmallWallSegment);
+        ArrayOfSmallWallSegments[i]->SetRelativeLocation(FVector((Offset > 0 ? Offset : 0) + i * 20, 0, 0));
+        if (IsValid(Material))
         {
-            ArrayOfWallSegments[idx]->SetStaticMesh(WindowSegmentMesh);
-            AttachActorToWallSegment(Window, ArrayOfWallSegments[idx], "WindowSocket");
+            ArrayOfSmallWallSegments[i]->SetMaterial(0, Material);
         }
     }
-
-    HighLightBorder();
 }
 
 void AWallActor::AttachActorToWallSegment(AActor* Actor, UStaticMeshComponent* WallSegment, const FName& SocketName)
@@ -117,7 +167,9 @@ void AWallActor::AttachActorToWallSegment(AActor* Actor, UStaticMeshComponent* W
 
 void AWallActor::OnLengthChange(float Length)
 {
-    auto NewNumberOfWallSegments = FMath::Floor(Length / LengthOfSegment);
+    int32 NewNumberOfWallSegments = FMath::Floor(Length / LengthOfSegment);
+
+    int32 NewSmallSegments = (((static_cast<int32>(Length) / 20) * 20) % LengthOfSegment) / 20;
 
     for (auto& [idx, Door] : IndexToDoorMapping)
     {
@@ -148,6 +200,14 @@ void AWallActor::OnLengthChange(float Length)
     if(NumberOfWallSegments != NewNumberOfWallSegments)
     {
         NumberOfWallSegments = NewNumberOfWallSegments;
+        NumberOfSmallWallSegments = NewSmallSegments;
+        UpdateWall();
+        return;
+    }
+
+    if (NumberOfSmallWallSegments != NewSmallSegments)
+    {
+        NumberOfSmallWallSegments = NewSmallSegments;
         UpdateWall();
     }
 
@@ -156,6 +216,15 @@ void AWallActor::OnLengthChange(float Length)
 void AWallActor::HighLightBorder()
 {
     for (auto& WallSegment : ArrayOfWallSegments)
+    {
+        if (IsValid(WallSegment))
+        {
+            WallSegment->SetRenderCustomDepth(true);
+            WallSegment->CustomDepthStencilValue = 2;
+        }
+    }
+
+    for (auto& WallSegment : ArrayOfSmallWallSegments)
     {
         if (IsValid(WallSegment))
         {
@@ -174,6 +243,14 @@ void AWallActor::UnHighLightBorder()
             WallSegment->SetRenderCustomDepth(false);
         }
     }
+
+    for (auto& WallSegment : ArrayOfSmallWallSegments)
+    {
+        if (IsValid(WallSegment))
+        {
+            WallSegment->SetRenderCustomDepth(false);
+        }
+    }
 }
 
 void AWallActor::OnMaterialChange(FMaterialInfo MaterialInfo)
@@ -181,6 +258,14 @@ void AWallActor::OnMaterialChange(FMaterialInfo MaterialInfo)
     SetMaterial(MaterialInfo.Material);
 
     for (auto& WallSegment : ArrayOfWallSegments)
+    {
+        if (IsValid(WallSegment))
+        {
+            WallSegment->SetMaterial(0, Material);
+        }
+    }
+
+    for (auto& WallSegment : ArrayOfSmallWallSegments)
     {
         if (IsValid(WallSegment))
         {
@@ -326,7 +411,7 @@ void AWallActor::SynchronizePropertyPanel()
 {
     if(IsValid(PropertyPanelUI))
     {
-        PropertyPanelUI->WallLengthValue->SetValue(NumberOfWallSegments * LengthOfSegment);
+        PropertyPanelUI->WallLengthValue->SetValue(NumberOfWallSegments * LengthOfSegment + NumberOfSmallWallSegments * 20);
     }
 }
 
@@ -339,6 +424,11 @@ void AWallActor::SyncProperties()
 int32 AWallActor::GetNumberOfWallSegments() const
 {
     return NumberOfWallSegments;
+}
+
+int32 AWallActor::GetNumberOfSmallWallSegments() const
+{
+    return NumberOfSmallWallSegments;
 }
 
 int32 AWallActor::GetLengthOfSegment() const
@@ -378,6 +468,12 @@ void AWallActor::SetNumberOfWallSegments(int32 InNumberOfWallSegments)
     UpdateWall();
 }
 
+void AWallActor::SetNumberOfSmallWallSegments(int32 InNumberOfSmallWallSegments)
+{
+    NumberOfSmallWallSegments = InNumberOfSmallWallSegments;
+    UpdateWall();
+}
+
 void AWallActor::SetLengthOfSegment(int32 InLengthOfSegment)
 {
     LengthOfSegment = InLengthOfSegment;
@@ -408,11 +504,26 @@ void AWallActor::SetIndexToDoorMapping(const TMap<int32, ADoorActor*>& InIndexTo
 
 void AWallActor::SetLength(float Length)
 {
-	if(auto NewNumberOfWallSegments = FMath::Max(FMath::Floor(Length / LengthOfSegment),1); NewNumberOfWallSegments != NumberOfWallSegments)
+    int32 NewNumberOfLargeWallSegments = FMath::Floor(Length / LengthOfSegment);
+
+    int32 NewNumberOfSmallSegments = (((static_cast<int32>(Length) / 20) * 20) % LengthOfSegment) / 20;
+
+    if(NewNumberOfLargeWallSegments == 0)
     {
-        NumberOfWallSegments = NewNumberOfWallSegments;
+        NewNumberOfSmallSegments = FMath::Max(NewNumberOfSmallSegments, 1);
+    }
+
+	if(NewNumberOfLargeWallSegments != NumberOfWallSegments)
+    {
+        NumberOfWallSegments = NewNumberOfLargeWallSegments;
+        NumberOfSmallWallSegments = NewNumberOfSmallSegments;
+        UpdateWall();
+        return;
+    }
+
+    if (NewNumberOfSmallSegments != NumberOfSmallWallSegments)
+    {
+        NumberOfSmallWallSegments = NewNumberOfSmallSegments;
         UpdateWall();
     }
-    
-
 }

@@ -55,6 +55,9 @@ struct FWall{
 	int32 NumberOfWallSegments;
 
 	UPROPERTY()
+	int32 NumberOfSmallWallSegments = 0;
+
+	UPROPERTY()
 	UMaterialInterface* Material;
 
 	UPROPERTY()
